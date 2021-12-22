@@ -74,6 +74,8 @@ namespace Hai.ConstraintTrackAnimationCreator.Scripts.Editor.EditorUI
 
                 neutrals.Add(neutral.transform);
             }
+
+            Undo.RecordObject(that, "");
             that.neutrals = neutrals.ToArray();
         }
 
@@ -113,6 +115,7 @@ namespace Hai.ConstraintTrackAnimationCreator.Scripts.Editor.EditorUI
 
             Undo.DestroyObjectImmediate(that);
 
+            SetExpandedRecursive(paths, true);
             EditorGUIUtility.PingObject(vrcGenerator);
         }
 
@@ -219,6 +222,18 @@ namespace Hai.ConstraintTrackAnimationCreator.Scripts.Editor.EditorUI
         private static void ConstraintActivateZeroOffset(IConstraint constraint)
         {
             constraint.GetType().GetMethod("ActivateWithZeroOffset", BindingFlags.Instance | BindingFlags.NonPublic).Invoke(constraint, null);
+        }
+
+        // https://answers.unity.com/questions/656869/foldunfold-gameobject-from-code.html?childToView=858132#comment-858132
+        public static void SetExpandedRecursive(GameObject go, bool expand)
+        {
+            var type = typeof(EditorWindow).Assembly.GetType("UnityEditor.SceneHierarchyWindow");
+            var methodInfo = type.GetMethod("SetExpandedRecursive");
+
+            EditorApplication.ExecuteMenuItem("Window/General/Hierarchy");
+            var window = EditorWindow.focusedWindow;
+
+            methodInfo.Invoke(window, new object[] { go.GetInstanceID(), expand });
         }
     }
 }
