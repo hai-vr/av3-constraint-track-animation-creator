@@ -8,7 +8,7 @@ namespace Hai.ConstraintTrackAnimationCreator.Scripts.Components
         public SingleConstraintTrack[] tracks;
         public GameObject parentOfAllTracks;
         public TrackTiming[] optionalTimings;
-        public float globalTimingScale = 1f;
+        public float globalTimingScale = 10f;
         public AnimationClip optionalAnimationActive;
         public AnimationClip optionalAnimationInactive;
 
