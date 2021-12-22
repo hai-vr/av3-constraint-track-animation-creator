@@ -19,6 +19,7 @@ namespace Hai.ConstraintTrackAnimationCreator.Scripts.Components
         public bool gizmoAlwaysVisible = true;
         public CtacGizmoDirection gizmoDirection;
         public float gizmoScale = 1f;
+        public float paddingDistance = 0.01f;
 
         [Serializable]
         public enum CtacGizmoDirection
@@ -153,10 +154,12 @@ namespace Hai.ConstraintTrackAnimationCreator.Scripts.Components
             var transforms = whichHierarchy.Cast<Transform>().ToArray();
             var timings = new List<float> {0f};
             var total = 0f;
+            var safePaddingDistance = paddingDistance < 0 ? 0f : paddingDistance;
             foreach (var currentTransform in transforms)
             {
                 var current = currentTransform.position;
-                total += Vector3.Distance(previous, current);
+                var distance = Vector3.Distance(previous, current);
+                total += Math.Max(distance, safePaddingDistance);
                 timings.Add(total);
                 previous = current;
             }
