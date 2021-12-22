@@ -16,6 +16,7 @@ namespace Hai.ConstraintTrackAnimationCreator.Scripts.Components
         public ParentConstraint proxy;
         public Transform neutral;
         public Transform path;
+        public bool gizmoAlwaysVisible = true;
         public CtacGizmoDirection gizmoDirection;
         public float gizmoScale = 1f;
 
@@ -26,7 +27,21 @@ namespace Hai.ConstraintTrackAnimationCreator.Scripts.Components
         }
 
         #if UNITY_EDITOR
+        private void OnDrawGizmosSelected()
+        {
+            if (gizmoAlwaysVisible) return;
+
+            DoDrawGizmo();
+        }
+
         private void OnDrawGizmos()
+        {
+            if (!gizmoAlwaysVisible) return;
+
+            DoDrawGizmo();
+        }
+
+        private void DoDrawGizmo()
         {
             var guiStyle = new GUIStyle();
             guiStyle.fontSize = 36;
