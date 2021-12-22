@@ -76,14 +76,14 @@ namespace Hai.ConstraintTrackAnimationCreator.VRChatSpecific.Scripts.Editor
                             // Index 0
                             var index = 0;
                             clip.Animates(currentTrackProxyConstraints, $"m_Sources.Array.data[{index}].weight")
-                                .WithSecondsUnit(keyframes => keyframes.Linear(0f, 1f).Linear(timings[1], 0f));
+                                .WithSecondsUnit(keyframes => keyframes.Linear(0f + 1 / 60f, 1f).Linear(timings[1], 0f));
                             var anyComponents = currentTrackProxyConstraints
                                 .Select(constraint => constraint.GetSource(index).sourceTransform)
                                 .Select(transform => transform.GetComponent<ParentConstraint>())
                                 .Where(subConstraint => subConstraint != null)
                                 .ToArray();
                             clip.Animates(anyComponents, "m_Enabled")
-                                .WithSecondsUnit(keyframes => keyframes.Constant(0f, 1f).Constant(timings[1], 0f));
+                                .WithSecondsUnit(keyframes => keyframes.Constant(0f, 1f).Constant(timings[1] + 1 / 60f, 0f));
                         }
                         {
                             // Index 1+
@@ -92,8 +92,9 @@ namespace Hai.ConstraintTrackAnimationCreator.VRChatSpecific.Scripts.Editor
                                 var zeroTime = timings.Count > index ? timings[index - 1] : timings[timings.Count - 1];
                                 var oneTime = timings.Count > index ? timings[index] : timings[timings.Count - 1];
                                 var twoTime = timings.Count > index + 1 ? timings[index + 1] : timings[timings.Count - 1];
+                                var isLast = timings.Count - 1 == index;
                                 clip.Animates(currentTrackProxyConstraints, $"m_Sources.Array.data[{index}].weight")
-                                    .WithSecondsUnit(keyframes => keyframes.Linear(zeroTime, 0f).Linear(oneTime, 1f).Linear(twoTime, 0f));
+                                    .WithSecondsUnit(keyframes => keyframes.Linear(zeroTime + 1 / 60f, 0f).Linear(oneTime + 1 / 60f, 1f).Linear(twoTime + 1 / 60f, isLast ? 1f : 0f));
                                 var anyComponents = currentTrackProxyConstraints
                                     .Where(constraint => constraint.sourceCount > index)
                                     .Select(constraint => constraint.GetSource(index).sourceTransform)
@@ -102,7 +103,7 @@ namespace Hai.ConstraintTrackAnimationCreator.VRChatSpecific.Scripts.Editor
                                     .Where(subConstraint => subConstraint != null)
                                     .ToArray();
                                 clip.Animates(anyComponents, "m_Enabled")
-                                    .WithSecondsUnit(keyframes => keyframes.Constant(zeroTime, 0f).Constant(zeroTime + 1 / 60f, 1f).Constant(oneTime, 1f).Constant(twoTime, 0f));
+                                    .WithSecondsUnit(keyframes => keyframes.Constant(zeroTime, 0f).Constant(zeroTime + 1 / 60f, 1f).Constant(oneTime, 1f).Constant(twoTime + 2 / 60f, isLast ? 1f : 0f));
                             }
                         }
                     }
