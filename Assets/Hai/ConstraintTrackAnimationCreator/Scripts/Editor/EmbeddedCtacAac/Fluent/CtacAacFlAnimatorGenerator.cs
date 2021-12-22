@@ -22,9 +22,6 @@ namespace Hai.ConstraintTrackAnimationCreator.Scripts.Editor.EmbeddedCtacAac.Flu
             {
                 switch (parameter)
                 {
-                    case AacFlIntParameter _:
-                        CreateParamIfNotExists(parameter.Name, AnimatorControllerParameterType.Int);
-                        break;
                     case AacFlFloatParameter _:
                         CreateParamIfNotExists(parameter.Name, AnimatorControllerParameterType.Float);
                         break;
@@ -69,7 +66,7 @@ namespace Hai.ConstraintTrackAnimationCreator.Scripts.Editor.EmbeddedCtacAac.Flu
                 .WithExitPosition(7, -1);
         }
 
-        internal int FindIndexOf(string layerName)
+        private int FindIndexOf(string layerName)
         {
             return _animatorController.layers.ToList().FindIndex(layer1 => layer1.name == layerName);
         }

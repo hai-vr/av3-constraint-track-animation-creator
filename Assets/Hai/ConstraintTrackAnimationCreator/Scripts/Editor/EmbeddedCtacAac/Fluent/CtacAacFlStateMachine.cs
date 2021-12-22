@@ -1,10 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using UnityEditor.Animations;
 using UnityEngine;
 using VRC.SDK3.Avatars.Components;
-using VRC.SDKBase;
 
 namespace Hai.ConstraintTrackAnimationCreator.Scripts.Editor.EmbeddedCtacAac.Fluent
 {
@@ -28,55 +26,6 @@ namespace Hai.ConstraintTrackAnimationCreator.Scripts.Editor.EmbeddedCtacAac.Flu
         {
             var result = AacFlFloatParameter.Internally(parameterName);
             _animatorAnimatorGenerator.CreateParamsAsNeeded(result);
-            return result;
-        }
-
-        public AacFlIntParameter IntParameter(string parameterName)
-        {
-            var result = AacFlIntParameter.Internally(parameterName);
-            _animatorAnimatorGenerator.CreateParamsAsNeeded(result);
-            return result;
-        }
-
-        public AacFlBoolParameterGroup BoolParameters(params string[] parameterNames)
-        {
-            var result = AacFlBoolParameterGroup.Internally(parameterNames);
-            _animatorAnimatorGenerator.CreateParamsAsNeeded(result.ToList().ToArray());
-            return result;
-        }
-
-        public AacFlFloatParameterGroup FloatParameters(params string[] parameterNames)
-        {
-            var result = AacFlFloatParameterGroup.Internally(parameterNames);
-            _animatorAnimatorGenerator.CreateParamsAsNeeded(result.ToList().ToArray());
-            return result;
-        }
-
-        public AacFlIntParameterGroup IntParameters(params string[] parameterNames)
-        {
-            var result = AacFlIntParameterGroup.Internally(parameterNames);
-            _animatorAnimatorGenerator.CreateParamsAsNeeded(result.ToList().ToArray());
-            return result;
-        }
-
-        public AacFlBoolParameterGroup BoolParameters(params AacFlBoolParameter[] parameters)
-        {
-            var result = AacFlBoolParameterGroup.Internally(parameters.Select(parameter => parameter.Name).ToArray());
-            _animatorAnimatorGenerator.CreateParamsAsNeeded(parameters);
-            return result;
-        }
-
-        public AacFlFloatParameterGroup FloatParameters(params AacFlFloatParameter[] parameters)
-        {
-            var result = AacFlFloatParameterGroup.Internally(parameters.Select(parameter => parameter.Name).ToArray());
-            _animatorAnimatorGenerator.CreateParamsAsNeeded(parameters);
-            return result;
-        }
-
-        public AacFlIntParameterGroup IntParameters(params AacFlIntParameter[] parameters)
-        {
-            var result = AacFlIntParameterGroup.Internally(parameters.Select(parameter => parameter.Name).ToArray());
-            _animatorAnimatorGenerator.CreateParamsAsNeeded(parameters);
             return result;
         }
     }
@@ -125,21 +74,6 @@ namespace Hai.ConstraintTrackAnimationCreator.Scripts.Editor.EmbeddedCtacAac.Flu
 
             return new AacFlState(state, _machine);
         }
-
-        public AacFlTransition AnyTransitionsTo(AacFlState destination)
-        {
-            return AnyTransition(destination, _machine);
-        }
-
-        internal static AacFlTransition AnyTransition(AacFlState destination, AnimatorStateMachine animatorStateMachine)
-        {
-            return new AacFlTransition(AacFlState.NewDefaultTransition(animatorStateMachine.AddAnyStateTransition(destination.State)), animatorStateMachine, null, destination.State);
-        }
-
-        public AnimatorStateMachine ExposeMachine()
-        {
-            return _machine;
-        }
     }
 
     internal class AacFlState
@@ -157,12 +91,6 @@ namespace Hai.ConstraintTrackAnimationCreator.Scripts.Editor.EmbeddedCtacAac.Flu
             _machine = machine;
         }
 
-        internal AacFlState WithAnimation(Motion clip)
-        {
-            State.motion = clip;
-            return this;
-        }
-
         internal AacFlState WithAnimation(AacFlClip clip)
         {
             State.motion = clip.Clip;
@@ -172,31 +100,6 @@ namespace Hai.ConstraintTrackAnimationCreator.Scripts.Editor.EmbeddedCtacAac.Flu
         internal AacFlTransition TransitionsTo(AacFlState destination)
         {
             return new AacFlTransition(NewDefaultTransition(State.AddTransition(destination.State)), _machine, State, destination.State);
-        }
-
-        internal AacFlTransition TransitionsFromAny()
-        {
-            return AacFlStateMachine.AnyTransition(this, _machine);
-        }
-
-        internal AacFlState AutomaticallyMovesTo(AacFlState destination)
-        {
-            var transition = NewDefaultTransition(State.AddTransition(destination.State));
-            transition.hasExitTime = true;
-            return this;
-        }
-
-        internal AacFlState __ForceToMoveInstantlyTo(AacFlState destination)
-        {
-            var transition = NewDefaultTransition(State.AddTransition(destination.State));
-            transition.hasExitTime = true;
-            transition.exitTime = 0;
-            return this;
-        }
-
-        internal AacFlTransition Exits()
-        {
-            return new AacFlTransition(NewDefaultTransition(State.AddExitTransition()), _machine, State, null);
         }
 
         internal static AnimatorStateTransition NewDefaultTransition(AnimatorStateTransition transition)
@@ -212,227 +115,10 @@ namespace Hai.ConstraintTrackAnimationCreator.Scripts.Editor.EmbeddedCtacAac.Flu
             return transition;
         }
 
-        internal AacFlState Drives(AacFlIntParameter parameter, int value)
-        {
-            CreateDriverBehaviorIfNotExists();
-            _driver.parameters.Add(new VRC_AvatarParameterDriver.Parameter
-            {
-                type = VRC_AvatarParameterDriver.ChangeType.Set,
-                name = parameter.Name, value = value
-            });
-            return this;
-        }
-
-        internal AacFlState Drives(AacFlFloatParameter parameter, float value)
-        {
-            CreateDriverBehaviorIfNotExists();
-            _driver.parameters.Add(new VRC_AvatarParameterDriver.Parameter
-            {
-                type = VRC_AvatarParameterDriver.ChangeType.Set,
-                name = parameter.Name, value = value
-            });
-            return this;
-        }
-
-        internal AacFlState DrivingIncreases(AacFlFloatParameter parameter, float additiveValue)
-        {
-            CreateDriverBehaviorIfNotExists();
-            _driver.parameters.Add(new VRC_AvatarParameterDriver.Parameter
-            {
-                type = VRC_AvatarParameterDriver.ChangeType.Add,
-                name = parameter.Name, value = additiveValue
-            });
-            return this;
-        }
-
-        internal AacFlState DrivingDecreases(AacFlFloatParameter parameter, float positiveValueToDecreaseBy)
-        {
-            CreateDriverBehaviorIfNotExists();
-            _driver.parameters.Add(new VRC_AvatarParameterDriver.Parameter
-            {
-                type = VRC_AvatarParameterDriver.ChangeType.Add,
-                name = parameter.Name, value = -positiveValueToDecreaseBy
-            });
-            return this;
-        }
-
-        internal AacFlState DrivingRandomizesLocally(AacFlFloatParameter parameter, float min, float max)
-        {
-            CreateDriverBehaviorIfNotExists();
-            _driver.parameters.Add(new VRC_AvatarParameterDriver.Parameter
-            {
-                type = VRC_AvatarParameterDriver.ChangeType.Random,
-                name = parameter.Name, valueMin = min, valueMax = max
-            });
-            return this;
-        }
-
-        internal AacFlState DrivingRandomizesLocally(AacFlIntParameter parameter, int min, int max)
-        {
-            CreateDriverBehaviorIfNotExists();
-            _driver.parameters.Add(new VRC_AvatarParameterDriver.Parameter
-            {
-                type = VRC_AvatarParameterDriver.ChangeType.Random,
-                name = parameter.Name, valueMin = min, valueMax = max
-            });
-            _driver.localOnly = true;
-            return this;
-        }
-
-        internal AacFlState Drives(AacFlBoolParameter parameter, bool value)
-        {
-            CreateDriverBehaviorIfNotExists();
-            _driver.parameters.Add(new VRC_AvatarParameterDriver.Parameter
-            {
-                name = parameter.Name, value = value ? 1 : 0
-            });
-            return this;
-        }
-
-        internal AacFlState Drives(AacFlBoolParameterGroup parameters, bool value)
-        {
-            CreateDriverBehaviorIfNotExists();
-            foreach (var parameter in parameters.ToList())
-            {
-                _driver.parameters.Add(new VRC_AvatarParameterDriver.Parameter
-                {
-                    name = parameter.Name, value = value ? 1 : 0
-                });
-            }
-            return this;
-        }
-
-        private void CreateDriverBehaviorIfNotExists()
-        {
-            if (_driver != null) return;
-            _driver = State.AddStateMachineBehaviour<VRCAvatarParameterDriver>();
-            _driver.parameters = new List<VRC_AvatarParameterDriver.Parameter>();
-        }
-
-        public AacFlState WithWriteDefaultsSetTo(bool shouldWriteDefaults)
-        {
-            State.writeDefaultValues = shouldWriteDefaults;
-            return this;
-        }
-
-        public AacFlState TrackingTracks(TrackingElement element)
-        {
-            CreateTrackingBehaviorIfNotExists();
-            SettingElementTo(element, VRC_AnimatorTrackingControl.TrackingType.Tracking);
-
-            return this;
-        }
-
-        public AacFlState TrackingAnimates(TrackingElement element)
-        {
-            CreateTrackingBehaviorIfNotExists();
-            SettingElementTo(element, VRC_AnimatorTrackingControl.TrackingType.Animation);
-
-            return this;
-        }
-
-        public AacFlState TrackingSets(TrackingElement element, VRC_AnimatorTrackingControl.TrackingType trackingType)
-        {
-            CreateTrackingBehaviorIfNotExists();
-            SettingElementTo(element, trackingType);
-
-            return this;
-        }
-
-        public AacFlState LocomotionEnabled()
-        {
-            CreateLocomotionBehaviorIfNotExists();
-            _locomotionControl.disableLocomotion = false;
-
-            return this;
-        }
-
-        public AacFlState LocomotionDisabled()
-        {
-            CreateLocomotionBehaviorIfNotExists();
-            _locomotionControl.disableLocomotion = true;
-
-            return this;
-        }
-
         public AacFlState NormalizedTime(AacFlFloatParameter floatParam)
         {
             State.timeParameterActive = true;
             State.timeParameter = floatParam.Name;
-
-            return this;
-        }
-
-        private void SettingElementTo(TrackingElement element, VRC_AnimatorTrackingControl.TrackingType target)
-        {
-            switch (element)
-            {
-                case TrackingElement.Head:
-                    _tracking.trackingHead = target;
-                    break;
-                case TrackingElement.LeftHand:
-                    _tracking.trackingLeftHand = target;
-                    break;
-                case TrackingElement.RightHand:
-                    _tracking.trackingRightHand = target;
-                    break;
-                case TrackingElement.Hip:
-                    _tracking.trackingHip = target;
-                    break;
-                case TrackingElement.LeftFoot:
-                    _tracking.trackingLeftFoot = target;
-                    break;
-                case TrackingElement.RightFoot:
-                    _tracking.trackingRightFoot = target;
-                    break;
-                case TrackingElement.LeftFingers:
-                    _tracking.trackingLeftFingers = target;
-                    break;
-                case TrackingElement.RightFingers:
-                    _tracking.trackingRightFingers = target;
-                    break;
-                case TrackingElement.Eyes:
-                    _tracking.trackingEyes = target;
-                    break;
-                case TrackingElement.Mouth:
-                    _tracking.trackingMouth = target;
-                    break;
-                default:
-                    throw new ArgumentOutOfRangeException(nameof(element), element, null);
-            }
-        }
-
-        private void CreateTrackingBehaviorIfNotExists()
-        {
-            if (_tracking != null) return;
-            _tracking = State.AddStateMachineBehaviour<VRCAnimatorTrackingControl>();
-        }
-
-
-        private void CreateLocomotionBehaviorIfNotExists()
-        {
-            if (_locomotionControl != null) return;
-            _locomotionControl = State.AddStateMachineBehaviour<VRCAnimatorLocomotionControl>();
-        }
-
-        internal enum TrackingElement
-        {
-            Head,
-            LeftHand,
-            RightHand,
-            Hip,
-            LeftFoot,
-            RightFoot,
-            LeftFingers,
-            RightFingers,
-            Eyes,
-            Mouth
-        }
-
-        public AacFlState WithSpeed(AacFlFloatParameter parameter)
-        {
-            State.speedParameter = parameter.Name;
-            State.speedParameterActive = true;
 
             return this;
         }

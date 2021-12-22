@@ -95,30 +95,6 @@ namespace Hai.ConstraintTrackAnimationCreator.Scripts.Editor.EmbeddedCtacAac.Flu
 
             return this;
         }
-
-        public AacFlClip SwappingMaterial(Renderer renderer, int slot, Material material)
-        {
-            var binding = AacV0.Binding(_component, renderer.GetType(), renderer.transform, $"m_Materials.Array.data[{slot}]");
-
-            AnimationUtility.SetObjectReferenceCurve(Clip, binding, new[] {
-                new ObjectReferenceKeyframe { time = 0f, value = material },
-                new ObjectReferenceKeyframe { time = 1/60f, value = material }
-            });
-
-            return this;
-        }
-
-        public AacFlClip SwappingMaterial(ParticleSystem particleSystem, int slot, Material material)
-        {
-            var binding = AacV0.Binding(_component, typeof(ParticleSystemRenderer), particleSystem.transform, $"m_Materials.Array.data[{slot}]");
-
-            AnimationUtility.SetObjectReferenceCurve(Clip, binding, new[] {
-                new ObjectReferenceKeyframe { time = 0f, value = material },
-                new ObjectReferenceKeyframe { time = 1/60f, value = material }
-            });
-
-            return this;
-        }
     }
 
     internal readonly struct AacFlEditClip
@@ -172,27 +148,6 @@ namespace Hai.ConstraintTrackAnimationCreator.Scripts.Editor.EmbeddedCtacAac.Flu
                 .ToArray();
 
             return new AacFlSettingCurve(Clip, bindings);
-        }
-
-        public AacFlSettingCurveColor AnimatesColor(Component anyComponent, string property)
-        {
-            var binding = Internal_BindingFromComponent(anyComponent, property);
-            return new AacFlSettingCurveColor(Clip, new[] {binding});
-        }
-
-        public AacFlSettingCurveColor AnimatesColor(Component[] anyComponents, string property)
-        {
-            var that = this;
-            var bindings = anyComponents
-                .Select(anyComponent => that.Internal_BindingFromComponent(anyComponent, property))
-                .ToArray();
-
-            return new AacFlSettingCurveColor(Clip, bindings);
-        }
-
-        public EditorCurveBinding BindingFromComponent(Component anyComponent, string propertyName)
-        {
-            return Internal_BindingFromComponent(anyComponent, propertyName);
         }
 
         private EditorCurveBinding Internal_BindingFromComponent(Component anyComponent, string propertyName)
@@ -256,47 +211,6 @@ namespace Hai.ConstraintTrackAnimationCreator.Scripts.Editor.EmbeddedCtacAac.Flu
         }
     }
 
-    internal class AacFlSettingCurveColor
-    {
-        private readonly AnimationClip _clip;
-        private readonly EditorCurveBinding[] _bindings;
-
-        public AacFlSettingCurveColor(AnimationClip clip, EditorCurveBinding[] bindings)
-        {
-            _clip = clip;
-            _bindings = bindings;
-        }
-
-        public void WithOneFrame(Color desiredValue)
-        {
-            foreach (var binding in _bindings)
-            {
-                AnimationUtility.SetEditorCurve(_clip, AacV0.ToSubBinding(binding, "r"), AacV0.OneFrame(desiredValue.r));
-                AnimationUtility.SetEditorCurve(_clip, AacV0.ToSubBinding(binding, "g"), AacV0.OneFrame(desiredValue.g));
-                AnimationUtility.SetEditorCurve(_clip, AacV0.ToSubBinding(binding, "b"), AacV0.OneFrame(desiredValue.b));
-                AnimationUtility.SetEditorCurve(_clip, AacV0.ToSubBinding(binding, "a"), AacV0.OneFrame(desiredValue.a));
-            }
-        }
-
-        public void WithKeyframes(AacFlUnit unit, Action<AacFlSettingKeyframesColor> action)
-        {
-            var mutatedKeyframesR = new List<Keyframe>();
-            var mutatedKeyframesG = new List<Keyframe>();
-            var mutatedKeyframesB = new List<Keyframe>();
-            var mutatedKeyframesA = new List<Keyframe>();
-            var builder = new AacFlSettingKeyframesColor(unit, mutatedKeyframesR, mutatedKeyframesG, mutatedKeyframesB, mutatedKeyframesA);
-            action.Invoke(builder);
-
-            foreach (var binding in _bindings)
-            {
-                AnimationUtility.SetEditorCurve(_clip, AacV0.ToSubBinding(binding, "r"), new AnimationCurve(mutatedKeyframesR.ToArray()));
-                AnimationUtility.SetEditorCurve(_clip, AacV0.ToSubBinding(binding, "g"), new AnimationCurve(mutatedKeyframesG.ToArray()));
-                AnimationUtility.SetEditorCurve(_clip, AacV0.ToSubBinding(binding, "b"), new AnimationCurve(mutatedKeyframesB.ToArray()));
-                AnimationUtility.SetEditorCurve(_clip, AacV0.ToSubBinding(binding, "a"), new AnimationCurve(mutatedKeyframesA.ToArray()));
-            }
-        }
-    }
-
     public class AacFlSettingKeyframes
     {
         private readonly AacFlUnit _unit;
@@ -329,11 +243,6 @@ namespace Hai.ConstraintTrackAnimationCreator.Scripts.Editor.EmbeddedCtacAac.Flu
             float timeEnd = AsSeconds(timeInUnit);
             float timeStart = _mutatedKeyframes.Count == 0 ? value : _mutatedKeyframes.Last().time;
             float num = (float) (((double) valueEnd - (double) valueStart) / ((double) timeEnd - (double) timeStart));
-            // return new AnimationCurve(new Keyframe[2]
-            // {
-                // new Keyframe(timeStart, valueStart, 0.0f, num),
-                // new Keyframe(timeEnd, valueEnd, num, 0.0f)
-            // });
 
             if (_mutatedKeyframes.Count > 0)
             {
@@ -357,52 +266,6 @@ namespace Hai.ConstraintTrackAnimationCreator.Scripts.Editor.EmbeddedCtacAac.Flu
                 default:
                     throw new ArgumentOutOfRangeException();
             }
-        }
-    }
-
-    public class AacFlSettingKeyframesColor
-    {
-        private AacFlSettingKeyframes _r;
-        private AacFlSettingKeyframes _g;
-        private AacFlSettingKeyframes _b;
-        private AacFlSettingKeyframes _a;
-
-        public AacFlSettingKeyframesColor(AacFlUnit unit, List<Keyframe> mutatedKeyframesR, List<Keyframe> mutatedKeyframesG, List<Keyframe> mutatedKeyframesB, List<Keyframe> mutatedKeyframesA)
-        {
-            _r = new AacFlSettingKeyframes(unit, mutatedKeyframesR);
-            _g = new AacFlSettingKeyframes(unit, mutatedKeyframesG);
-            _b = new AacFlSettingKeyframes(unit, mutatedKeyframesB);
-            _a = new AacFlSettingKeyframes(unit, mutatedKeyframesA);
-        }
-
-        public AacFlSettingKeyframesColor Easing(int frame, Color value)
-        {
-            _r.Easing(frame, value.r);
-            _g.Easing(frame, value.g);
-            _b.Easing(frame, value.b);
-            _a.Easing(frame, value.a);
-
-            return this;
-        }
-
-        public AacFlSettingKeyframesColor Linear(float frame, Color value)
-        {
-            _r.Linear(frame, value.r);
-            _g.Linear(frame, value.g);
-            _b.Linear(frame, value.b);
-            _a.Linear(frame, value.a);
-
-            return this;
-        }
-
-        public AacFlSettingKeyframesColor Constant(int frame, Color value)
-        {
-            _r.Constant(frame, value.r);
-            _g.Constant(frame, value.g);
-            _b.Constant(frame, value.b);
-            _a.Constant(frame, value.a);
-
-            return this;
         }
     }
 

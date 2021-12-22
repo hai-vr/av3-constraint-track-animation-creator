@@ -80,52 +80,10 @@ namespace Hai.ConstraintTrackAnimationCreator.Scripts.Editor.EmbeddedCtacAac
                 return _component;
             }
 
-            public AacFlLayer CreateMainFxLayer()
-            {
-                var layerName = _component.layerNameSuffix;
-                return CreateLayer(layerName, VRCAvatarDescriptor.AnimLayerType.FX);
-            }
-
             public AacFlLayer CreateSupportingFxLayer(string suffix)
             {
                 var layerName = (_component.layerNameSuffix + "__" + suffix);
                 return CreateLayer(layerName, VRCAvatarDescriptor.AnimLayerType.FX);
-            }
-
-            public AacFlLayer CreateMainGestureLayer()
-            {
-                var layerName = _component.layerNameSuffix;
-                return CreateLayer(layerName, VRCAvatarDescriptor.AnimLayerType.Gesture);
-            }
-
-            public AacFlLayer CreateSupportingGestureLayer(string suffix)
-            {
-                var layerName = (_component.layerNameSuffix + "__" + suffix);
-                return CreateLayer(layerName, VRCAvatarDescriptor.AnimLayerType.Gesture);
-            }
-
-            public AacFlLayer CreateMainActionLayer()
-            {
-                var layerName = _component.layerNameSuffix;
-                return CreateLayer(layerName, VRCAvatarDescriptor.AnimLayerType.Action);
-            }
-
-            public AacFlLayer CreateSupportingActionLayer(string suffix)
-            {
-                var layerName = (_component.layerNameSuffix + "__" + suffix);
-                return CreateLayer(layerName, VRCAvatarDescriptor.AnimLayerType.Action);
-            }
-
-            public AacFlLayer CreateMainAv3Layer(VRCAvatarDescriptor.AnimLayerType animLayerType)
-            {
-                var layerName = _component.layerNameSuffix;
-                return CreateLayer(layerName, animLayerType);
-            }
-
-            public AacFlLayer CreateSupportingAv3Layer(VRCAvatarDescriptor.AnimLayerType animLayerType, string suffix)
-            {
-                var layerName = (_component.layerNameSuffix + "__" + suffix);
-                return CreateLayer(layerName, animLayerType);
             }
 
             private AacFlLayer CreateLayer(string layerName, VRCAvatarDescriptor.AnimLayerType animLayerType)
@@ -169,140 +127,8 @@ namespace Hai.ConstraintTrackAnimationCreator.Scripts.Editor.EmbeddedCtacAac
                 return StateMachine.NewState(name, x, y);
             }
 
-            public AacFlTransition AnyTransitionsTo(AacFlState destination)
-            {
-                return StateMachine.AnyTransitionsTo(destination);
-            }
-
             public AacFlBoolParameter BoolParameter(string parameterName) => StateMachine.BackingAnimator().BoolParameter(parameterName);
             public AacFlFloatParameter FloatParameter(string parameterName) => StateMachine.BackingAnimator().FloatParameter(parameterName);
-            public AacFlIntParameter IntParameter(string parameterName) => StateMachine.BackingAnimator().IntParameter(parameterName);
-            public AacFlBoolParameterGroup BoolParameters(params string[] parameterNames) => StateMachine.BackingAnimator().BoolParameters(parameterNames);
-            public AacFlFloatParameterGroup FloatParameters(params string[] parameterNames) => StateMachine.BackingAnimator().FloatParameters(parameterNames);
-            public AacFlIntParameterGroup IntParameters(params string[] parameterNames) => StateMachine.BackingAnimator().IntParameters(parameterNames);
-            public AacFlBoolParameterGroup BoolParameters(params AacFlBoolParameter[] parameters) => StateMachine.BackingAnimator().BoolParameters(parameters);
-            public AacFlFloatParameterGroup FloatParameters(params AacFlFloatParameter[] parameters) => StateMachine.BackingAnimator().FloatParameters(parameters);
-            public AacFlIntParameterGroup IntParameters(params AacFlIntParameter[] parameters) => StateMachine.BackingAnimator().IntParameters(parameters);
-            public AacAv3 Av3() => new AacAv3(StateMachine.BackingAnimator());
-
-            /// <summary>
-            /// A layer template representing a toggle between two states.
-            /// </summary>
-            /// <param name="inactiveClip"></param>
-            /// <param name="activeClip"></param>
-            /// <param name="aacTransitionDuration"></param>
-            public void UsingOffToOn(AnimationClip inactiveClip, AnimationClip activeClip, float aacTransitionDuration)
-            {
-                OffToOn(_component, inactiveClip, activeClip, aacTransitionDuration, this);
-            }
-
-            /// <summary>
-            /// A layer template representing a toggle between two states.
-            /// </summary>
-            /// <param name="inactiveClip"></param>
-            /// <param name="activeClip"></param>
-            /// <param name="aacTransitionDuration"></param>
-            public void UsingOffToOn(AacFlClip inactiveClip, AacFlClip activeClip, float aacTransitionDuration)
-            {
-                OffToOn(_component, inactiveClip.Clip, activeClip.Clip, aacTransitionDuration, this);
-            }
-
-            /// <summary>
-            /// A layer template representing a toggle between two states.
-            /// </summary>
-            /// <param name="inactiveClip"></param>
-            /// <param name="activeClip"></param>
-            /// <param name="aacTransitionDuration"></param>
-            public void UsingOffToOn(AacFlState inactiveState, AacFlState activeState, float aacTransitionDuration)
-            {
-                OffToOnStates(_component, inactiveState, activeState, aacTransitionDuration, this);
-            }
-
-            /// <summary>
-            /// A layer template representing a toggleable state.
-            /// However, the active state will revert back to an inactive state, and cannot be entered as long as the gatedParameter is true.
-            /// </summary>
-            /// <param name="inactiveClip"></param>
-            /// <param name="activeClip"></param>
-            /// <param name="aacTransitionDuration"></param>
-            public void UsingOffToOnGatedBy(AacFlClip inactiveClip, AacFlClip activeClip, float aacTransitionDuration, AacFlBoolParameter gatedParameter)
-            {
-                OffToOnGatedBy(_component, inactiveClip.Clip, activeClip.Clip, aacTransitionDuration, gatedParameter, this);
-            }
-
-            /// <summary>
-            /// A layer template representing a single clip with Normalized Time.
-            /// </summary>
-            /// <param name="clip"></param>
-            public void UsingNormalized(AacFlClip clip)
-            {
-                Normalized(_component, clip, this);
-            }
-
-            /// <summary>
-            /// A layer template representing a single clip.
-            /// </summary>
-            /// <param name="clip"></param>
-            public void UsingJust(AacFlClip clip)
-            {
-                StateMachine.NewState("Running", 0, 0)
-                    .WithAnimation(clip);
-            }
-
-            private static void OffToOn(AnimatorAsCode component, AnimationClip whenOff, AnimationClip whenOn, float duration, AacFlLayer layer)
-            {
-                var stateOff = layer.StateMachine.NewState(whenOff.name, 0, 0).WithAnimation(whenOff);
-                var stateOn = layer.StateMachine.NewState(whenOn.name, 0, 1).WithAnimation(whenOn);
-
-                OffToOnStates(component, stateOff, stateOn, duration, layer);
-            }
-
-            private static void OffToOnGatedBy(AnimatorAsCode component, AnimationClip whenOff, AnimationClip whenOn, float duration, AacFlBoolParameter gateParameter, AacFlLayer layer)
-            {
-                var stateOff = layer.StateMachine.NewState(whenOff.name, 0, 0).WithAnimation(whenOff);
-                var stateOn = layer.StateMachine.NewState(whenOn.name, 0, 1).WithAnimation(whenOn);
-
-                OffToOnStatesGatedBy(component, stateOff, stateOn, duration, gateParameter, layer);
-            }
-
-            private static void OffToOnStates(AnimatorAsCode component, AacFlState stateOff, AacFlState stateOn, float duration, AacFlLayer aacFlLayer)
-            {
-                var mainParameter = aacFlLayer.BoolParameter(component.parameterName);
-                stateOff.TransitionsTo(stateOn).WithTransitionDurationSeconds(duration).When(mainParameter.IsTrue());
-                stateOn.TransitionsTo(stateOff).WithTransitionDurationSeconds(duration).When(mainParameter.IsFalse());
-            }
-
-            private static void OffToOnStatesGatedBy(AnimatorAsCode component, AacFlState stateOff, AacFlState stateOn, float duration, AacFlBoolParameter gatedParameter, AacFlLayer aacFlLayer)
-            {
-                var mainParameter = aacFlLayer.BoolParameter(component.parameterName);
-                stateOff.TransitionsTo(stateOn).WithTransitionDurationSeconds(duration)
-                    .When(mainParameter.IsTrue()).And(gatedParameter.IsTrue());
-                stateOn.TransitionsTo(stateOff).WithTransitionDurationSeconds(duration)
-                    .When(mainParameter.IsFalse())
-                    .Or().When(gatedParameter.IsFalse());
-            }
-
-            private static void Normalized(AnimatorAsCode component, AacFlClip clip, AacFlLayer layer)
-            {
-                layer.StateMachine.NewState("Normalized", 0, 0)
-                    .WithAnimation(clip)
-                    .NormalizedTime(layer.FloatParameter(component.parameterName));
-            }
-
-            public AacFlBoolParameter MainBoolParameter()
-            {
-                return BoolParameter(_component.parameterName);
-            }
-
-            public AacFlFloatParameter MainFloatParameter()
-            {
-                return FloatParameter(_component.parameterName);
-            }
-
-            public AacFlIntParameter MainIntParameter()
-            {
-                return IntParameter(_component.parameterName);
-            }
 
             public AacFlLayer WithAvatarMask(AvatarMask avatarMask)
             {
