@@ -12,6 +12,7 @@ namespace Hai.ConstraintTrackAnimationCreator.Scripts.Components
     public class SingleConstraintTrack : MonoBehaviour
     {
         public bool autoUpdatePathNames = true;
+        public ParentConstraint[] bones;
         public ParentConstraint proxy;
         public Transform neutral;
         public Transform path;
