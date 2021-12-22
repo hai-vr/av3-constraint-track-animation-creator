@@ -177,8 +177,7 @@ namespace Hai.ConstraintTrackAnimationCreator.Scripts.Editor.EditorUI
             });
             Undo.RegisterCreatedObjectUndo(p0, "");
 
-            // TODO
-            // track.DoSetupConstraint();
+            track.UpdateConstraintTrack();
 
             return track;
         }

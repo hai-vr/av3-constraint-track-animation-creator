@@ -148,6 +148,50 @@ namespace Hai.ConstraintTrackAnimationCreator.Scripts.Components
 
             return timings.Select(f => f / total * scale + addDelay).ToList();
         }
+
+        public void UpdateConstraintTrack()
+        {
+            DoSetupConstraint();
+
+            if (autoUpdatePathNames)
+            {
+                DoRenamePathObjects();
+            }
+        }
+
+        private void DoSetupConstraint()
+        {
+            Undo.RecordObject(proxy, "");
+            proxy.constraintActive = false;
+            proxy.transform.position = neutral.position;
+            proxy.transform.rotation = neutral.rotation;
+
+            var sources = MakeSources();
+            proxy.SetSources(sources);
+
+            proxy.constraintActive = true;
+            proxy.locked = true;
+        }
+
+        private List<ConstraintSource> MakeSources()
+        {
+            var neutralSource = new [] { new ConstraintSource { weight = 1, sourceTransform = neutral } };
+
+            return neutralSource
+                .Concat(path.Cast<Transform>()
+                    .Select(t => new ConstraintSource {weight = 0, sourceTransform = t}))
+                .ToList();
+        }
+
+        private void DoRenamePathObjects()
+        {
+            var pathObjects = path.Cast<Transform>().Select(transform => transform.gameObject).ToArray();
+            for (var index = 0; index < pathObjects.Length; index++)
+            {
+                Undo.RecordObject(pathObjects[index], "");
+                pathObjects[index].name = "P" + index;
+            }
+        }
 #endif
     }
 }

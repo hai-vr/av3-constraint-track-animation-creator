@@ -57,6 +57,8 @@ namespace Hai.ConstraintTrackAnimationCreator.VRChatSpecific.Scripts.Editor
                 .Toggling(cta.parentOfAllTracks, true)
                 .That(clip =>
                 {
+                    clip.Animates(boneConstraints, "m_Weight").WithOneFrame(1f);
+
                     for (var trackIndex = 0; trackIndex < cta.tracks.Length; trackIndex++)
                     {
                         var singleConstraintTrack = cta.tracks[trackIndex];
@@ -68,14 +70,14 @@ namespace Hai.ConstraintTrackAnimationCreator.VRChatSpecific.Scripts.Editor
                         var scaleCorrected = timingConfig.scale == 0f ? 1f : timingConfig.scale;
                         var timings = singleConstraintTrack.Timings(scaleCorrected * cta.globalTimingScale, timingConfig.delayStartSeconds);
 
-                        clip.Animates(boneConstraints, "m_Weight").WithOneFrame(1f);
 
+                        var currentTrackProxyConstraints = new []{singleConstraintTrack.proxy};
                         {
                             // Index 0
                             var index = 0;
-                            clip.Animates(proxyConstraints, $"m_Sources.Array.data[{index}].weight")
+                            clip.Animates(currentTrackProxyConstraints, $"m_Sources.Array.data[{index}].weight")
                                 .WithSecondsUnit(keyframes => keyframes.Linear(0f, 1f).Linear(timings[1], 0f));
-                            var anyComponents = proxyConstraints
+                            var anyComponents = currentTrackProxyConstraints
                                 .Select(constraint => constraint.GetSource(index).sourceTransform)
                                 .Select(transform => transform.GetComponent<ParentConstraint>())
                                 .Where(subConstraint => subConstraint != null)
@@ -85,14 +87,14 @@ namespace Hai.ConstraintTrackAnimationCreator.VRChatSpecific.Scripts.Editor
                         }
                         {
                             // Index 1+
-                            for (var index = 1; index <= timings.Count + 1; index++)
+                            for (var index = 1; index < timings.Count; index++)
                             {
                                 var zeroTime = timings.Count > index ? timings[index - 1] : timings[timings.Count - 1];
                                 var oneTime = timings.Count > index ? timings[index] : timings[timings.Count - 1];
                                 var twoTime = timings.Count > index + 1 ? timings[index + 1] : timings[timings.Count - 1];
-                                clip.Animates(proxyConstraints, $"m_Sources.Array.data[{index}].weight")
+                                clip.Animates(currentTrackProxyConstraints, $"m_Sources.Array.data[{index}].weight")
                                     .WithSecondsUnit(keyframes => keyframes.Linear(zeroTime, 0f).Linear(oneTime, 1f).Linear(twoTime, 0f));
-                                var anyComponents = proxyConstraints
+                                var anyComponents = currentTrackProxyConstraints
                                     .Where(constraint => constraint.sourceCount > index)
                                     .Select(constraint => constraint.GetSource(index).sourceTransform)
                                     .Where(transform => transform != null)

@@ -12,10 +12,10 @@ namespace Hai.ConstraintTrackAnimationCreator.VRChatSpecific.Scripts.Editor.Edit
         {
             DrawDefaultInspector();
 
-            // if (GUILayout.Button(CtacLocalization.Localize(CtacLocalization.Phrase.UpdateAllConstraintTracks)))
-            // {
-                // UpdateAllConstraintTracks();
-            // }
+            if (GUILayout.Button(CtacLocalization.Localize(CtacLocalization.Phrase.UpdateAllConstraintTracks)))
+            {
+                UpdateAllConstraintTracks();
+            }
 
             if (GUILayout.Button(CtacLocalization.Localize(CtacLocalization.Phrase.RegenerateAnimator)))
             {
@@ -25,12 +25,17 @@ namespace Hai.ConstraintTrackAnimationCreator.VRChatSpecific.Scripts.Editor.Edit
 
         private void UpdateAllConstraintTracks()
         {
-            // TODO
+            Undo.SetCurrentGroupName(CtacLocalization.Localize(CtacLocalization.Phrase.UpdateConstraintTrack));
+
+            foreach (var track in That().constraintTrackAnimation.tracks)
+            {
+                track.UpdateConstraintTrack();
+            }
         }
 
         private void RegenerateAnimator()
         {
-            var that = (ConstraintTrackVRCGenerator)target;
+            var that = That();
             var generator = new CtacVRCAnimatorGenerator(new CtacController
             {
                 avatar = that.avatar,
@@ -39,6 +44,11 @@ namespace Hai.ConstraintTrackAnimationCreator.VRChatSpecific.Scripts.Editor.Edit
                 parameterName = that.trackName
             });
             generator.Create();
+        }
+
+        private ConstraintTrackVRCGenerator That()
+        {
+            return (ConstraintTrackVRCGenerator)target;
         }
     }
 }
