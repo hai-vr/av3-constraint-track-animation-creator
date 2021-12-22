@@ -45,7 +45,11 @@ namespace Hai.ConstraintTrackAnimationCreator.VRChatSpecific.Scripts.Editor
             offButEnabledOnce = _aac.CopyClip(inactiveClip)
                 .TogglingComponent(boneConstraints, true)
                 .TogglingComponent(proxyConstraints, false)
-                .Toggling(cta.parentOfAllTracks, false);
+                .Toggling(cta.parentOfAllTracks, false)
+                .That(clip =>
+                {
+                    clip.Animates(boneConstraints, "m_Weight").WithOneFrame(0f);
+                });
 
             whenMoving = _aac.CopyClip(activeClip)
                 .TogglingComponent(boneConstraints, true)

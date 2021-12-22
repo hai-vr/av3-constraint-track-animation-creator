@@ -28,16 +28,16 @@ namespace Hai.ConstraintTrackAnimationCreator.Scripts.Components
         #if UNITY_EDITOR
         private void OnDrawGizmos()
         {
+            var guiStyle = new GUIStyle();
+            guiStyle.fontSize = 36;
+            guiStyle.alignment = TextAnchor.MiddleCenter;
+            guiStyle.font = GUIStyle.none.font;
+
             if (path != null && neutral != null)
             {
                 var pathTransforms = path.Cast<Transform>().Where(t => t != null).ToArray();
                 if (pathTransforms.Length > 0)
                 {
-                    var guiStyle = new GUIStyle();
-                    guiStyle.fontSize = 36;
-                    guiStyle.alignment = TextAnchor.MiddleCenter;
-                    guiStyle.font = GUIStyle.none.font;
-
                     DrawPath(guiStyle, pathTransforms, Color.red);
                 }
             }
@@ -48,6 +48,7 @@ namespace Hai.ConstraintTrackAnimationCreator.Scripts.Components
                 var direction = GizmoDirectionAsVector();
                 Handles.DrawWireDisc(proxy.transform.position, direction, 0.03f * gizmoScale);
                 Handles.DrawWireDisc(proxy.transform.position, direction, 0.025f * gizmoScale);
+                DrawVertex(proxy.transform, "", guiStyle, gizmoScale * 0.75f);
             }
         }
 
