@@ -12,10 +12,20 @@ namespace Hai.ConstraintTrackAnimationCreator.VRChatSpecific.Scripts.Editor.Edit
         {
             DrawDefaultInspector();
 
+            // if (GUILayout.Button(CtacLocalization.Localize(CtacLocalization.Phrase.UpdateAllConstraintTracks)))
+            // {
+                // UpdateAllConstraintTracks();
+            // }
+
             if (GUILayout.Button(CtacLocalization.Localize(CtacLocalization.Phrase.RegenerateAnimator)))
             {
                 RegenerateAnimator();
             }
+        }
+
+        private void UpdateAllConstraintTracks()
+        {
+            // TODO
         }
 
         private void RegenerateAnimator()

@@ -7,7 +7,10 @@ namespace Hai.ConstraintTrackAnimationCreator.Scripts.Editor.EditorUI.Localizati
         public enum Phrase
         {
             UpdateConstraintTrack,
-            RegenerateAnimator
+            UpdateAllConstraintTracks,
+            RegenerateAnimator,
+            CreateNeutralObjects,
+            ConfirmSetup
         }
 
         public static string Localize(Phrase phrase)
@@ -16,8 +19,14 @@ namespace Hai.ConstraintTrackAnimationCreator.Scripts.Editor.EditorUI.Localizati
             {
                 case Phrase.UpdateConstraintTrack:
                     return "Update Constraint Track";
+                case Phrase.UpdateAllConstraintTracks:
+                    return "Update All Constraint Tracks";
                 case Phrase.RegenerateAnimator:
                     return "Regenerate Animator";
+                case Phrase.CreateNeutralObjects:
+                    return "Create Neutral Objects";
+                case Phrase.ConfirmSetup:
+                    return "Confirm Setup";
                 default:
                     throw new ArgumentOutOfRangeException(nameof(phrase), phrase, null);
             }
