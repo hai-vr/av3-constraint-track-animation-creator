@@ -17,6 +17,7 @@ namespace Hai.ConstraintTrackAnimationCreator.Scripts.Components
         public Transform neutral;
         public Transform path;
         public CtacGizmoDirection gizmoDirection;
+        public float gizmoScale = 1f;
 
         [Serializable]
         public enum CtacGizmoDirection
@@ -45,8 +46,8 @@ namespace Hai.ConstraintTrackAnimationCreator.Scripts.Components
             {
                 Handles.color = Color.green;
                 var direction = GizmoDirectionAsVector();
-                Handles.DrawWireDisc(proxy.transform.position, direction, 0.03f);
-                Handles.DrawWireDisc(proxy.transform.position, direction, 0.025f);
+                Handles.DrawWireDisc(proxy.transform.position, direction, 0.03f * gizmoScale);
+                Handles.DrawWireDisc(proxy.transform.position, direction, 0.025f * gizmoScale);
             }
         }
 
@@ -72,19 +73,19 @@ namespace Hai.ConstraintTrackAnimationCreator.Scripts.Components
             guiStyle.normal.textColor = Color.yellow;
 
             Handles.DrawLine(neutral.position, transforms[0].position);
-            DrawVertex(neutral, "N", guiStyle);
+            DrawVertex(neutral, "N", guiStyle, gizmoScale);
 
             for (var index = 0; index < transforms.Length - 1; index++)
             {
                 Handles.color = IsConstraintActive(transforms[index]) ? Color.green : colorIdle;
                 Handles.DrawLine(transforms[index].position, transforms[index + 1].position);
-                DrawVertex(transforms[index], index + "", guiStyle);
+                DrawVertex(transforms[index], index + "", guiStyle, gizmoScale);
             }
 
-            DrawVertex(transforms[transforms.Length - 1], transforms.Length - 1 + "", guiStyle);
+            DrawVertex(transforms[transforms.Length - 1], transforms.Length - 1 + "", guiStyle, gizmoScale);
         }
 
-        private static void DrawVertex(Transform that, string text, GUIStyle guiStyle)
+        private static void DrawVertex(Transform that, string text, GUIStyle guiStyle, float gizmoScale)
         {
             var originalColor = Handles.color;
 
@@ -92,14 +93,14 @@ namespace Hai.ConstraintTrackAnimationCreator.Scripts.Components
             Handles.color = color;
             guiStyle.normal.textColor = color;
 
-            var forwardSize = 0.01f;
+            var forwardSize = 0.01f * gizmoScale;
             var pos = that.position;
             var right = that.right;
             var up = that.up;
             var forward = that.forward;
             for (var i = 0; i < 2; i++)
             {
-                float rightSize = 0.0065f;
+                var rightSize = 0.0065f * gizmoScale;
                 if (i == 1) rightSize = -rightSize;
                 Handles.DrawAAPolyLine(
                     pos + right * forwardSize + up * forwardSize + forward * rightSize,
@@ -110,9 +111,10 @@ namespace Hai.ConstraintTrackAnimationCreator.Scripts.Components
                 );
             }
 
-            Handles.color = Color.red; Handles.DrawLine(pos, pos + right * 0.02f);
-            Handles.color = Color.green; Handles.DrawLine(pos, pos + up * 0.02f);
-            Handles.color = Color.blue; Handles.DrawLine(pos, pos + forward * 0.02f);
+            var lineSize = 0.02f * gizmoScale;
+            Handles.color = Color.red; Handles.DrawLine(pos, pos + right * lineSize);
+            Handles.color = Color.green; Handles.DrawLine(pos, pos + up * lineSize);
+            Handles.color = Color.blue; Handles.DrawLine(pos, pos + forward * lineSize);
             Handles.color = originalColor;
         }
 
