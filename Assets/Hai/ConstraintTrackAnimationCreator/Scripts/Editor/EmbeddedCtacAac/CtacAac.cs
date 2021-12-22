@@ -360,6 +360,20 @@ namespace Hai.ConstraintTrackAnimationCreator.Scripts.Editor.EmbeddedCtacAac
 
                 WithAvatarMask(avatarMask);
             }
+
+            public void ForceParameterInAnimator(AacFlBoolParameter toBeForced, bool value)
+            {
+                var parameters = _animatorController.parameters;
+                foreach (var param in parameters)
+                {
+                    if (param.name == toBeForced.Name)
+                    {
+                        param.defaultBool = value;
+                    }
+                }
+
+                _animatorController.parameters = parameters;
+            }
         }
 
         public static AnimationClip NewClipToggling(AnimatorAsCode component, GameObject[] togglables, bool value, string suffix)

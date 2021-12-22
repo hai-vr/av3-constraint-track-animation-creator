@@ -13,7 +13,7 @@ namespace Hai.ConstraintTrackAnimationCreator.VRChatSpecific.Scripts.Editor
     {
         private readonly AacV0.AacFlBase<CtacController> _aac;
 
-        private CtacVRCAnimatorGenerator(AnimatorAsCode aac)
+        public CtacVRCAnimatorGenerator(AnimatorAsCode aac)
         {
             _aac = AacV0.Using((CtacController) aac);
         }
@@ -56,8 +56,13 @@ namespace Hai.ConstraintTrackAnimationCreator.VRChatSpecific.Scripts.Editor
                     for (var trackIndex = 0; trackIndex < cta.tracks.Length; trackIndex++)
                     {
                         var singleConstraintTrack = cta.tracks[trackIndex];
-                        var timingConfig = cta.timings[trackIndex];
-                        var timings = singleConstraintTrack.Timings(timingConfig.scale * cta.globalTimingScale);
+                        var timingConfig = trackIndex < cta.optionalTimings.Length ? cta.optionalTimings[trackIndex] : new ConstraintTrackAnimation.TrackTiming
+                        {
+                            scale = 1,
+                            delayStartSeconds = 0
+                        };
+                        var scaleCorrected = timingConfig.scale == 0f ? 1f : timingConfig.scale;
+                        var timings = singleConstraintTrack.Timings(scaleCorrected * cta.globalTimingScale, timingConfig.delayStartSeconds);
 
                         clip.Animates(boneConstraints, "m_Weight").WithOneFrame(1f);
 
@@ -105,9 +110,20 @@ namespace Hai.ConstraintTrackAnimationCreator.VRChatSpecific.Scripts.Editor
             var generator = data.generator;
 
             var aapParameter = AapParameter(layer, data.parameterName);
-            var manualControlParameter = ManualControlParameter(layer, generator);
-            var autoParameter = AutoParameter(layer);
-            var allowSystemParameter = AllowSystemParameter(layer, generator);
+            var manualControlParameter = ManualControlParameter(layer, data.parameterName, generator);
+            var autoParameter = AutoParameter(layer, data.parameterName);
+            var allowSystemParameter = AllowSystemParameter(layer, data.parameterName, generator);
+            if (generator.systemIsAllowedByDefault)
+            {
+                layer.ForceParameterInAnimator(allowSystemParameter, true);
+            }
+            else
+            {
+                if (HasNoCustomAllowSystemName(generator))
+                {
+                    layer.ForceParameterInAnimator(allowSystemParameter, false);
+                }
+            }
 
             var idle = layer.NewState("Idle", 0, 0);
             var animating = layer.NewState("Animating", 0, 1).WithAnimation(_aac.NewClip()
@@ -138,11 +154,11 @@ namespace Hai.ConstraintTrackAnimationCreator.VRChatSpecific.Scripts.Editor
             var layer = _aac.CreateSupportingFxLayer("Motion");
 
             var aapParam = AapParameter(layer, _aac.Get().parameterName);
-            var allowSystemParam = AllowSystemParameter(layer, generator);
+            var allowSystemParam = AllowSystemParameter(layer, _aac.Get().parameterName, generator);
 
             var never = layer.NewState("Never enabled", 0, 0)
                 .WithAnimation(neverEnabled);
-            var moving = layer.NewState("Sliding", 0, 1)
+            var moving = layer.NewState("Moving", 0, 1)
                 .WithAnimation(whenMoving)
                 .NormalizedTime(aapParam);
             var once = layer.NewState("Once", 0, 2)
@@ -154,27 +170,33 @@ namespace Hai.ConstraintTrackAnimationCreator.VRChatSpecific.Scripts.Editor
             layer.WithAvatarMaskNoTransforms();
         }
 
-        private static AacFlFloatParameter AapParameter(AacV0.AacFlLayer layer, string parameterName)
+        private static AacFlFloatParameter AapParameter(AacV0.AacFlLayer layer, string paramName)
         {
-            return layer.FloatParameter(parameterName + "__AAP");
+            return layer.FloatParameter(paramName + "__AAP");
         }
 
-        private static AacFlBoolParameter AllowSystemParameter(AacV0.AacFlLayer layer, ConstraintTrackVRCGenerator generator)
+        private static AacFlBoolParameter AllowSystemParameter(AacV0.AacFlLayer layer, string paramName, ConstraintTrackVRCGenerator generator)
         {
-            return layer.BoolParameter(generator.allowSystemParamName);
+            return layer.BoolParameter(generator.systemIsAllowedByDefault || HasNoCustomAllowSystemName(generator) ? paramName + "_Allow" : generator.optionalAllowSystemParamName);
         }
 
-        private static AacFlBoolParameter AutoParameter(AacV0.AacFlLayer layer)
+        private static bool HasNoCustomAllowSystemName(ConstraintTrackVRCGenerator generator)
         {
-            return layer.BoolParameter("_Auto");
+            return generator.optionalAllowSystemParamName == null || generator.optionalAllowSystemParamName.Trim() == "";
         }
 
-        private static AacFlFloatParameter ManualControlParameter(AacV0.AacFlLayer layer, ConstraintTrackVRCGenerator generator)
+        private static AacFlBoolParameter AutoParameter(AacV0.AacFlLayer layer, string paramName)
         {
-            return layer.FloatParameter(ToNormalizedParameterName(generator));
+            return layer.BoolParameter($"{paramName}_Auto");
         }
 
-        private static string ToNormalizedParameterName(ConstraintTrackVRCGenerator generator)
+        private static AacFlFloatParameter ManualControlParameter(AacV0.AacFlLayer layer, string paramName, ConstraintTrackVRCGenerator generator)
+        {
+            var manualControlParameterName = ToManualControlParameterName(generator);
+            return layer.FloatParameter(paramName + manualControlParameterName);
+        }
+
+        private static string ToManualControlParameterName(ConstraintTrackVRCGenerator generator)
         {
             switch (generator.floatType)
             {

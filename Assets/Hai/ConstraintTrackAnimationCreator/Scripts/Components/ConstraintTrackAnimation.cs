@@ -7,7 +7,7 @@ namespace Hai.ConstraintTrackAnimationCreator.Scripts.Components
     {
         public SingleConstraintTrack[] tracks;
         public GameObject parentOfAllTracks;
-        public TrackTiming[] timings;
+        public TrackTiming[] optionalTimings;
         public float globalTimingScale;
         public AnimationClip optionalAnimationActive;
         public AnimationClip optionalAnimationInactive;

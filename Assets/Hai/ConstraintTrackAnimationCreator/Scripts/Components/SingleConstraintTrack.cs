@@ -125,12 +125,12 @@ namespace Hai.ConstraintTrackAnimationCreator.Scripts.Components
             return isConstraintActive;
         }
 
-        public List<float> Timings(float scale)
+        public List<float> Timings(float scale, float addDelay)
         {
-            return CalculateTimings(scale, path);
+            return CalculateTimings(scale, path, addDelay);
         }
 
-        private List<float> CalculateTimings(float scale, Transform whichHierarchy)
+        private List<float> CalculateTimings(float scale, Transform whichHierarchy, float addDelay)
         {
             var previous = neutral.position;
 
@@ -145,7 +145,7 @@ namespace Hai.ConstraintTrackAnimationCreator.Scripts.Components
                 previous = current;
             }
 
-            return timings.Select(f => f / total * scale).ToList();
+            return timings.Select(f => f / total * scale + addDelay).ToList();
         }
 #endif
     }

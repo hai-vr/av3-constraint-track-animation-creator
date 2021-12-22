@@ -9,12 +9,12 @@ namespace Hai.ConstraintTrackAnimationCreator.VRChatSpecific.Scripts.Components
     {
         public ConstraintTrackAnimation constraintTrackAnimation;
         public VRCAvatarDescriptor avatar;
-        public string layerName;
+        public string trackName;
         public CtacVRCFloatType floatType = CtacVRCFloatType.Simple;
         public bool includeSmoothing;
 
         public bool systemIsAllowedByDefault = true;
-        public string allowSystemParamName = "";
+        public string optionalAllowSystemParamName = "";
 
         [Serializable]
         public enum CtacVRCFloatType
