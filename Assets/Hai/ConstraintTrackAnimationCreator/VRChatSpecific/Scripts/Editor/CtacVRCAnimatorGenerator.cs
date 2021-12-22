@@ -58,7 +58,7 @@ namespace Hai.ConstraintTrackAnimationCreator.VRChatSpecific.Scripts.Editor
                         var singleConstraintTrack = cta.tracks[trackIndex];
                         var timingConfig = trackIndex < cta.optionalTimings.Length ? cta.optionalTimings[trackIndex] : new ConstraintTrackAnimation.TrackTiming
                         {
-                            scale = 1,
+                            scale = 1f,
                             delayStartSeconds = 0
                         };
                         var scaleCorrected = timingConfig.scale == 0f ? 1f : timingConfig.scale;
