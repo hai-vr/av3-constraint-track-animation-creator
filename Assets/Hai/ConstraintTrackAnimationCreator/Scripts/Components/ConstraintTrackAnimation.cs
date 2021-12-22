@@ -6,6 +6,7 @@ namespace Hai.ConstraintTrackAnimationCreator.Scripts.Components
     public class ConstraintTrackAnimation : MonoBehaviour
     {
         public SingleConstraintTrack[] tracks;
+        public Transform parentOfAllTracks;
         public TrackTiming[] timings;
         public AnimationClip optionalAnimationActive;
         public AnimationClip optionalAnimationInactive;
