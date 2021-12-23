@@ -41,14 +41,11 @@ namespace Hai.ConstraintTrackAnimationCreator.Scripts.Editor.EditorUI
             if (that.detachments.Length > 0)
             {
                 GUILayout.BeginVertical("GroupBox");
-                if (GUILayout.Button(CtacLocalization.Localize(CtacLocalization.Phrase.ApplyAgain)))
+                if (GUILayout.Button(CtacLocalization.Localize(CtacLocalization.Phrase.FixModelUpdate)))
                 {
-                    ApplyAgain();
+                    FixModelUpdate();
                 }
-                if (GUILayout.Button(CtacLocalization.Localize(CtacLocalization.Phrase.RevertWithoutRemoving)))
-                {
-                    RevertWithoutRemoving();
-                }
+
                 EditorGUILayout.LabelField(CtacLocalization.Localize(CtacLocalization.Phrase.DetachedBones));
                 foreach (var detachment in that.detachments)
                 {
@@ -59,6 +56,23 @@ namespace Hai.ConstraintTrackAnimationCreator.Scripts.Editor.EditorUI
                     EditorGUILayout.ObjectField(detachment.detached, typeof(Transform));
                     GUILayout.EndHorizontal();
                 }
+
+                that.advancedFoldout = EditorGUILayout.Foldout(that.advancedFoldout, CtacLocalization.Localize(CtacLocalization.Phrase.Advanced));
+                if (that.advancedFoldout)
+                {
+                    if (GUILayout.Button(CtacLocalization.Localize(CtacLocalization.Phrase.ApplyAgain)))
+                    {
+                        ApplyAgain();
+                    }
+                    if (GUILayout.Button(CtacLocalization.Localize(CtacLocalization.Phrase.RevertWithoutRemoving)))
+                    {
+                        RevertWithoutRemoving();
+                    }
+                    if (GUILayout.Button(CtacLocalization.Localize(CtacLocalization.Phrase.RevertPrefabBonesArray)))
+                    {
+                        RevertPrefabBonesArray();
+                    }
+                }
                 GUILayout.EndVertical();
             }
         }
@@ -66,6 +80,20 @@ namespace Hai.ConstraintTrackAnimationCreator.Scripts.Editor.EditorUI
         private bool IsSmrBoneInAnyMemberOfDetachment(Transform smrBone)
         {
             return That().detachments.Any(detachment => detachment.original == smrBone || detachment.detached == smrBone);
+        }
+
+        private void FixModelUpdate()
+        {
+            Undo.SetCurrentGroupName(CtacLocalization.Localize(CtacLocalization.Phrase.FixModelUpdate));
+
+            RevertPrefabBonesArrayInternal();
+            ApplyAgainInternal();
+        }
+
+        private void RevertPrefabBonesArray()
+        {
+            Undo.SetCurrentGroupName(CtacLocalization.Localize(CtacLocalization.Phrase.RevertPrefabBonesArray));
+            RevertPrefabBonesArrayInternal();
         }
 
         private void DetachBone(int index, Transform originalBone)
@@ -94,6 +122,11 @@ namespace Hai.ConstraintTrackAnimationCreator.Scripts.Editor.EditorUI
         {
             Undo.SetCurrentGroupName(CtacLocalization.Localize(CtacLocalization.Phrase.ApplyAgain));
 
+            ApplyAgainInternal();
+        }
+
+        private void ApplyAgainInternal()
+        {
             var that = That();
 
             Undo.RecordObject(that.skinnedMesh, "");
@@ -112,7 +145,14 @@ namespace Hai.ConstraintTrackAnimationCreator.Scripts.Editor.EditorUI
                     }
                 }
             }
+
             that.skinnedMesh.bones = smrBones;
+        }
+
+        private void RevertPrefabBonesArrayInternal()
+        {
+            Undo.RecordObject(That().skinnedMesh, "");
+            PrefabUtility.RevertPropertyOverride(new SerializedObject(That().skinnedMesh).FindProperty("m_Bones"), InteractionMode.AutomatedAction);
         }
 
         private void RevertWithoutRemoving()

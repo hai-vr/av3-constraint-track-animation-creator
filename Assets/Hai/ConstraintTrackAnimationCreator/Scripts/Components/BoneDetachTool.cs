@@ -7,6 +7,7 @@ namespace Hai.ConstraintTrackAnimationCreator.Scripts.Components
     {
         public SkinnedMeshRenderer skinnedMesh;
         public bool enableDetachEditor = true;
+        public bool advancedFoldout = false;
         public Detachment[] detachments = new Detachment[0];
 
         [Serializable]
