@@ -12,7 +12,10 @@ namespace Hai.ConstraintTrackAnimationCreator.Scripts.Editor.EditorUI.Localizati
             CreateNeutralObjects,
             ConfirmSetup,
             DetachBone,
-            ShowBonesDetachEditor
+            ShowBonesDetachEditor,
+            DetachedBones,
+            ApplyAgain,
+            RevertWithoutRemoving
         }
 
         public static string Localize(Phrase phrase)
@@ -33,6 +36,12 @@ namespace Hai.ConstraintTrackAnimationCreator.Scripts.Editor.EditorUI.Localizati
                     return "Detach Bone";
                 case Phrase.ShowBonesDetachEditor:
                     return "Show Bones Detach Editor";
+                case Phrase.DetachedBones:
+                    return "Detached Bones";
+                case Phrase.ApplyAgain:
+                    return "Apply Again";
+                case Phrase.RevertWithoutRemoving:
+                    return "Revert Without Removing";
                 default:
                     throw new ArgumentOutOfRangeException(nameof(phrase), phrase, null);
             }
