@@ -91,6 +91,12 @@ namespace Hai.ConstraintTrackAnimationCreator.Scripts.Editor.EmbeddedCtacAac.Flu
             _machine = machine;
         }
 
+        internal AacFlState WithAnimation(Motion clip)
+        {
+            State.motion = clip;
+            return this;
+        }
+
         internal AacFlState WithAnimation(AacFlClip clip)
         {
             State.motion = clip.Clip;

@@ -95,7 +95,13 @@ namespace Hai.ConstraintTrackAnimationCreator.VRChatSpecific.Scripts.Editor
                                 var twoTime = timings.Count > index + 1 ? timings[index + 1] : timings[timings.Count - 1];
                                 var isLast = timings.Count - 1 == index;
                                 clip.Animates(currentTrackProxyConstraints, $"m_Sources.Array.data[{index}].weight")
-                                    .WithSecondsUnit(keyframes => keyframes.Linear(zeroTime + 1 / 60f, 0f).Linear(oneTime + 1 / 60f, 1f).Linear(twoTime + 1 / 60f, isLast ? 1f : 0f));
+                                    .WithSecondsUnit(keyframes =>
+                                    {
+                                        // Hack: if oneTime == twoTime, it creates a NaN tangent, so add 1 / 60f to it to prevent it
+                                        // Can't find a way to fix this the right way
+                                        var preventNaN = oneTime == twoTime ? 1 / 60f : 0f;
+                                        keyframes.Linear(zeroTime + 1 / 60f, 0f).Linear(oneTime + 1 / 60f, 1f).Linear(twoTime + 1 / 60f + preventNaN, isLast ? 1f : 0f);
+                                    });
                                 var anyComponents = currentTrackProxyConstraints
                                     .Where(constraint => constraint.sourceCount > index)
                                     .Select(constraint => constraint.GetSource(index).sourceTransform)
@@ -116,12 +122,12 @@ namespace Hai.ConstraintTrackAnimationCreator.VRChatSpecific.Scripts.Editor
             var layer = _aac.CreateSupportingFxLayer("Control");
             var data = _aac.Get();
             var generator = data.generator;
+            var useSmoothing = data.generator.manualIncludeSmoothing;
 
             var aapParameter = AapParameter(layer, data.parameterName);
             var manualControlParameter = ManualControlParameter(layer, data.parameterName, generator);
             var autoParameter = AutoParameter(layer, data.parameterName);
             var allowSystemParameter = AllowSystemParameter(layer, data.parameterName, generator);
-            var smoothingFactorParameter = SmoothingFactorParameter(layer, data.parameterName);
             if (generator.systemIsAllowedByDefault)
             {
                 layer.ForceParameterInAnimator(allowSystemParameter, true);
@@ -133,7 +139,6 @@ namespace Hai.ConstraintTrackAnimationCreator.VRChatSpecific.Scripts.Editor
                     layer.ForceParameterInAnimator(allowSystemParameter, false);
                 }
             }
-            layer.ForceParameterInAnimator(smoothingFactorParameter, data.generator.smoothingFactor);
 
             var autoDurationSeconds = data.generator.autoDurationSeconds;
 
@@ -141,17 +146,29 @@ namespace Hai.ConstraintTrackAnimationCreator.VRChatSpecific.Scripts.Editor
             var auto = layer.NewState("Auto", 0, 1).WithAnimation(_aac.NewClip()
                 .That(clip => { clip.AnimatingAnimator(aapParameter).WithSecondsUnit(keyframes => keyframes.Easing(0f, 0f).Easing(autoDurationSeconds, 0.9999f)); }));
             var reverse = layer.NewState("Reverse", 1, 1).WithAnimation(_aac.NewClip()
-                .That(clip => { clip.AnimatingAnimator(aapParameter).WithSecondsUnit(keyframes => keyframes.Easing(0f, 0.999f).Easing(autoDurationSeconds, 0.9999f)); }));
+                .That(clip => { clip.AnimatingAnimator(aapParameter).WithSecondsUnit(keyframes => keyframes.Easing(0f, 0.9999f).Easing(autoDurationSeconds, 0f)); }));
             var done = layer.NewState("Done", 0, 2).WithAnimation(_aac.NewClip().Looping().That(clip => clip.AnimatingAnimator(aapParameter).WithFixedSeconds(60f, 0.9999f)));
-            var manual = layer.NewState("ManualControl", 3, 1)
-                .NormalizedTime(manualControlParameter)
-                .WithAnimation(_aac.NewClip().Looping().That(clip => clip.AnimatingAnimator(aapParameter).WithSecondsUnit(keyframes => keyframes.Easing(0f, 0f).Easing(1f, 0.9999f))));
+            AacFlState manual;
+            if (useSmoothing)
+            {
+                var smoothingFactorParameter = SmoothingFactorParameter(layer, data.parameterName);
+                layer.ForceParameterInAnimator(smoothingFactorParameter, data.generator.smoothingFactor);
 
-            var zeroClip = _aac.NewClip().That(clip => clip.AnimatingAnimator(aapParameter).WithOneFrame(0f));
-            var oneClip = _aac.NewClip().That(clip => clip.AnimatingAnimator(aapParameter).WithOneFrame(1f));
-            // var proxyTree = CreateProxyTree(manualControlParameter, zeroClip, oneClip);
-            // var smoothingTree = CreateSmoothingTree(aapParameter, zeroClip, oneClip);
-            // var factorTree = CreateFactorTree(smoothingFactorParameter, proxyTree, smoothingTree);
+                // Manual Smoothed Trees
+                var zeroClip = _aac.NewClip().That(clip => clip.AnimatingAnimator(aapParameter).WithOneFrame(0f));
+                var oneClip = _aac.NewClip().That(clip => clip.AnimatingAnimator(aapParameter).WithOneFrame(1f));
+                var proxyTree = CreateProxyTree(manualControlParameter, zeroClip, oneClip);
+                var smoothingTree = CreateSmoothingTree(aapParameter, zeroClip, oneClip);
+                var factorTree = CreateFactorTree(smoothingFactorParameter, proxyTree, smoothingTree);
+                manual = layer.NewState("ManualControl", 3, 1) // Smoothed
+                    .WithAnimation(factorTree);
+            }
+            else
+            {
+                manual = layer.NewState("ManualControl", 3, 1)
+                    .NormalizedTime(manualControlParameter)
+                    .WithAnimation(_aac.NewClip().Looping().That(clip => clip.AnimatingAnimator(aapParameter).WithSecondsUnit(keyframes => keyframes.Easing(0f, 0f).Easing(1f, 0.9999f))));
+            }
 
             // Automatic Cycle
             idle.TransitionsTo(auto).When(autoParameter.IsTrue()).And(allowSystemParameter.IsTrue()).And(manualControlParameter.IsLessThan(0.01f));
@@ -168,9 +185,19 @@ namespace Hai.ConstraintTrackAnimationCreator.VRChatSpecific.Scripts.Editor
             {
                 moveToManual.TransitionsTo(manual).When(manualControlParameter.IsGreaterThan(0.01f)).And(allowSystemParameter.IsTrue());
             }
-            manual.TransitionsTo(done).When(manualControlParameter.IsGreaterThan(0.99f)).And(allowSystemParameter.IsTrue());
-            done.TransitionsTo(manual).When(manualControlParameter.IsLessThan(0.99f)).And(manualControlParameter.IsGreaterThan(0.01f)).And(allowSystemParameter.IsTrue());
-            manual.TransitionsTo(idle).When(manualControlParameter.IsLessThan(0.01f));
+
+            if (useSmoothing)
+            {
+                manual.TransitionsTo(done).When(aapParameter.IsGreaterThan(0.99f)).And(allowSystemParameter.IsTrue());
+                done.TransitionsTo(manual).When(manualControlParameter.IsLessThan(0.99f)).And(manualControlParameter.IsGreaterThan(0.01f)).And(allowSystemParameter.IsTrue());
+                manual.TransitionsTo(idle).When(aapParameter.IsLessThan(0.01f));
+            }
+            else
+            {
+                manual.TransitionsTo(done).When(manualControlParameter.IsGreaterThan(0.99f)).And(allowSystemParameter.IsTrue());
+                done.TransitionsTo(manual).When(manualControlParameter.IsLessThan(0.99f)).And(manualControlParameter.IsGreaterThan(0.01f)).And(allowSystemParameter.IsTrue());
+                manual.TransitionsTo(idle).When(manualControlParameter.IsLessThan(0.01f));
+            }
 
             // Allow System Immediate Shutoff
             foreach (var cancelWhenNotAllowed in new[] {auto, reverse, manual, done})
@@ -229,24 +256,6 @@ namespace Hai.ConstraintTrackAnimationCreator.VRChatSpecific.Scripts.Editor
                 };
             }
             return factorTree;
-        }
-
-        private static BlendTree InterpolationTree(string param, string zeroClip, string oneClip)
-        {
-            return new BlendTree
-            {
-                name = "autoBT_" + param + "_Interp",
-                blendParameter = param,
-                blendType = BlendTreeType.Simple1D,
-                minThreshold = 0,
-                maxThreshold = 1,
-                useAutomaticThresholds = true,
-                children = new[]
-                {
-                    new ChildMotion {motion = AssetDatabase.LoadAssetAtPath<AnimationClip>(zeroClip), timeScale = 1, threshold = 0},
-                    new ChildMotion {motion = AssetDatabase.LoadAssetAtPath<AnimationClip>(oneClip), timeScale = 1, threshold = 1}},
-                hideFlags = HideFlags.HideInHierarchy
-            };
         }
 
         private void CreateMotionLayer(ConstraintTrackVRCGenerator generator, AacFlClip neverEnabled, AacFlClip whenMoving, AacFlClip offButEnabledOnce)

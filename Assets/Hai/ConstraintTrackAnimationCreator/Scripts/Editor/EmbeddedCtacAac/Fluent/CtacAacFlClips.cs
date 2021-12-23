@@ -254,6 +254,10 @@ namespace Hai.ConstraintTrackAnimationCreator.Scripts.Editor.EmbeddedCtacAac.Flu
             float timeEnd = AsSeconds(timeInUnit);
             float timeStart = _mutatedKeyframes.Count == 0 ? value : _mutatedKeyframes.Last().time;
             float num = (float) (((double) valueEnd - (double) valueStart) / ((double) timeEnd - (double) timeStart));
+            if (float.IsNaN(num))
+            {
+                Debug.LogError("Animation generated with a NaN tangent!");
+            }
 
             if (_mutatedKeyframes.Count > 0)
             {
