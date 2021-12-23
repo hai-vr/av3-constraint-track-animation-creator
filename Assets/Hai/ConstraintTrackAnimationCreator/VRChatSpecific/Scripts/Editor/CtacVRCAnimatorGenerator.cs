@@ -207,8 +207,6 @@ namespace Hai.ConstraintTrackAnimationCreator.VRChatSpecific.Scripts.Editor
         {
             switch (generator.floatType)
             {
-                case ConstraintTrackVRCGenerator.CtacVRCFloatType.Simple: return "_Simple";
-                case ConstraintTrackVRCGenerator.CtacVRCFloatType.Complex: return "_Complex";
                 case ConstraintTrackVRCGenerator.CtacVRCFloatType.Manual: return "_Manual";
                 default:
                     throw new ArgumentOutOfRangeException();

@@ -170,7 +170,7 @@ namespace Hai.ConstraintTrackAnimationCreator.Scripts.Editor.EditorUI
                 sourceTransform = proxy.transform,
                 weight = 1f
             });
-            ConstraintActivateZeroOffset(boneParentConstraint);
+            ConstraintActivate(boneParentConstraint);
             boneParentConstraint.enabled = false;
 
             var path = new GameObject($"{thatBone.name}_Path");
@@ -233,9 +233,9 @@ namespace Hai.ConstraintTrackAnimationCreator.Scripts.Editor.EditorUI
             return vrcGenerator;
         }
 
-        private static void ConstraintActivateZeroOffset(IConstraint constraint)
+        private static void ConstraintActivate(IConstraint constraint)
         {
-            constraint.GetType().GetMethod("ActivateWithZeroOffset", BindingFlags.Instance | BindingFlags.NonPublic).Invoke(constraint, null);
+            constraint.GetType().GetMethod("ActivateAndPreserveOffset", BindingFlags.Instance | BindingFlags.NonPublic).Invoke(constraint, null);
         }
 
         // https://answers.unity.com/questions/656869/foldunfold-gameobject-from-code.html?childToView=858132#comment-858132
