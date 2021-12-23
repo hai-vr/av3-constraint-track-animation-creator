@@ -20,6 +20,7 @@ namespace Hai.ConstraintTrackAnimationCreator.Scripts.Editor.EditorUI
             var neutrals = serializedObject.FindProperty(nameof(ConstraintTrackSetup.neutrals));
             var ignoreBoneRotation = serializedObject.FindProperty(nameof(ConstraintTrackSetup.ignoreBoneRotation));
             var ignoreBoneScale = serializedObject.FindProperty(nameof(ConstraintTrackSetup.ignoreBoneScale));
+            var generateScaleConstraint = serializedObject.FindProperty(nameof(ConstraintTrackSetup.generateScaleConstraint));
 
             var neutralsAreCreated = neutrals.arraySize > 0;
 
@@ -31,6 +32,7 @@ namespace Hai.ConstraintTrackAnimationCreator.Scripts.Editor.EditorUI
             EditorGUILayout.PropertyField(bones);
             EditorGUILayout.PropertyField(ignoreBoneRotation);
             EditorGUILayout.PropertyField(ignoreBoneScale);
+            EditorGUILayout.PropertyField(generateScaleConstraint);
             EditorGUI.EndDisabledGroup();
             EditorGUILayout.PropertyField(serializedObject.FindProperty(nameof(ConstraintTrackSetup.gizmoDirection)));
             EditorGUILayout.PropertyField(serializedObject.FindProperty(nameof(ConstraintTrackSetup.gizmoScale)));
@@ -160,6 +162,7 @@ namespace Hai.ConstraintTrackAnimationCreator.Scripts.Editor.EditorUI
             var proxy = new GameObject($"{thatBone.name}_Proxy");
             proxy.transform.parent = proxies.transform;
             proxy.transform.position = neutral.position;
+            proxy.transform.rotation = neutral.rotation;
             Undo.RegisterCreatedObjectUndo(proxy, "");
 
             var proxyConstraint = proxy.AddComponent<ParentConstraint>();
@@ -171,7 +174,21 @@ namespace Hai.ConstraintTrackAnimationCreator.Scripts.Editor.EditorUI
                 weight = 1f
             });
             ConstraintActivate(boneParentConstraint);
-            boneParentConstraint.enabled = false;
+            boneParentConstraint.enabled = true; // FIXME: Figure out why constraint break on init if it's false instead of true
+
+            if (that.generateScaleConstraint)
+            {
+                proxy.AddComponent<ScaleConstraint>();
+
+                var boneScaleConstraint = Undo.AddComponent<ScaleConstraint>(thatBone.gameObject);
+                boneScaleConstraint.AddSource(new ConstraintSource
+                {
+                    sourceTransform = proxy.transform,
+                    weight = 1f
+                });
+                ConstraintActivate(boneScaleConstraint);
+                boneScaleConstraint.enabled = true; // FIXME: Figure out why constraint break on init if it's false instead of true
+            }
 
             var path = new GameObject($"{thatBone.name}_Path");
             path.transform.parent = paths.transform;

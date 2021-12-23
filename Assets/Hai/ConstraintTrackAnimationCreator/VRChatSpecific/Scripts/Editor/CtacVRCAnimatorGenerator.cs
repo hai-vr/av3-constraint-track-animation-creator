@@ -34,6 +34,8 @@ namespace Hai.ConstraintTrackAnimationCreator.VRChatSpecific.Scripts.Editor
         {
             ParentConstraint[] boneConstraints = cta.tracks.SelectMany(track => track.bones).Distinct().ToArray();
             ParentConstraint[] proxyConstraints = cta.tracks.Select(track => track.proxy).ToArray();
+            ScaleConstraint[] maybeBoneScaleConstraints = boneConstraints.Select(constraint => constraint.GetComponent<ScaleConstraint>()).Where(constraint => constraint != null).ToArray();
+            ScaleConstraint[] maybeProxyScaleConstraints = proxyConstraints.Select(constraint => constraint.GetComponent<ScaleConstraint>()).Where(constraint => constraint != null).ToArray();
 
             var inactiveClip = cta.optionalAnimationInactive != null ? cta.optionalAnimationInactive : new AnimationClip();
             var activeClip = cta.optionalAnimationActive != null ? cta.optionalAnimationActive : new AnimationClip();
@@ -41,11 +43,15 @@ namespace Hai.ConstraintTrackAnimationCreator.VRChatSpecific.Scripts.Editor
             neverEnabled = _aac.CopyClip(inactiveClip)
                 .TogglingComponent(boneConstraints, false)
                 .TogglingComponent(proxyConstraints, false)
+                .TogglingComponent(maybeBoneScaleConstraints, false)
+                .TogglingComponent(maybeProxyScaleConstraints, false)
                 .Toggling(cta.parentOfAllTracks, false);
 
             offButEnabledOnce = _aac.CopyClip(inactiveClip)
                 .TogglingComponent(boneConstraints, true)
                 .TogglingComponent(proxyConstraints, false)
+                .TogglingComponent(maybeBoneScaleConstraints, false)
+                .TogglingComponent(maybeProxyScaleConstraints, false)
                 .Toggling(cta.parentOfAllTracks, false)
                 .That(clip =>
                 {
@@ -55,6 +61,8 @@ namespace Hai.ConstraintTrackAnimationCreator.VRChatSpecific.Scripts.Editor
             whenMoving = _aac.CopyClip(activeClip)
                 .TogglingComponent(boneConstraints, true)
                 .TogglingComponent(proxyConstraints, true)
+                .TogglingComponent(maybeBoneScaleConstraints, true)
+                .TogglingComponent(maybeProxyScaleConstraints, true)
                 .Toggling(cta.parentOfAllTracks, true)
                 .That(clip =>
                 {
@@ -73,10 +81,13 @@ namespace Hai.ConstraintTrackAnimationCreator.VRChatSpecific.Scripts.Editor
 
 
                         var currentTrackProxyConstraints = new []{singleConstraintTrack.proxy};
+                        var currentTrackMultiProxyConstraints = new Component[]{singleConstraintTrack.proxy, singleConstraintTrack.proxy.GetComponent<ScaleConstraint>()}
+                            .Where(component => component != null)
+                            .ToArray();
                         {
                             // Index 0
                             var index = 0;
-                            clip.Animates(currentTrackProxyConstraints, $"m_Sources.Array.data[{index}].weight")
+                            clip.Animates(currentTrackMultiProxyConstraints, $"m_Sources.Array.data[{index}].weight")
                                 .WithSecondsUnit(keyframes => keyframes.Linear(0f + 1 / 60f, 1f).Linear(timings[1], 0f));
                             var anyComponents = currentTrackProxyConstraints
                                 .Select(constraint => constraint.GetSource(index).sourceTransform)
@@ -94,7 +105,7 @@ namespace Hai.ConstraintTrackAnimationCreator.VRChatSpecific.Scripts.Editor
                                 var oneTime = timings.Count > index ? timings[index] : timings[timings.Count - 1];
                                 var twoTime = timings.Count > index + 1 ? timings[index + 1] : timings[timings.Count - 1];
                                 var isLast = timings.Count - 1 == index;
-                                clip.Animates(currentTrackProxyConstraints, $"m_Sources.Array.data[{index}].weight")
+                                clip.Animates(currentTrackMultiProxyConstraints, $"m_Sources.Array.data[{index}].weight")
                                     .WithSecondsUnit(keyframes =>
                                     {
                                         // Hack: if oneTime == twoTime, it creates a NaN tangent, so add 1 / 60f to it to prevent it

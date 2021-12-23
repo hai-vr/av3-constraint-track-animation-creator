@@ -6,15 +6,19 @@ using UnityEngine;
 namespace Hai.ConstraintTrackAnimationCreator.Scripts.Editor.EditorUI
 {
     [CustomEditor(typeof(SingleConstraintTrack))]
+    [CanEditMultipleObjects]
     public class SingleConstraintTrackEditor : UnityEditor.Editor
     {
         public override void OnInspectorGUI()
         {
             DrawDefaultInspector();
 
-            if (GUILayout.Button(CtacLocalization.Localize(CtacLocalization.Phrase.UpdateConstraintTrack)))
+            if (!serializedObject.isEditingMultipleObjects)
             {
-                UpdateConstraintTrack();
+                if (GUILayout.Button(CtacLocalization.Localize(CtacLocalization.Phrase.UpdateConstraintTrack)))
+                {
+                    UpdateConstraintTrack();
+                }
             }
         }
 

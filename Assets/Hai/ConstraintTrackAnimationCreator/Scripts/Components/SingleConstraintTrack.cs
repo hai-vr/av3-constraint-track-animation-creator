@@ -181,6 +181,7 @@ namespace Hai.ConstraintTrackAnimationCreator.Scripts.Components
         {
             Undo.RecordObject(proxy, "");
             proxy.constraintActive = false;
+            // FIXME: Question: Isn't this dangerous to do since the bone is already copying the proxy???
             proxy.transform.position = neutral.position;
             proxy.transform.rotation = neutral.rotation;
 
@@ -189,6 +190,19 @@ namespace Hai.ConstraintTrackAnimationCreator.Scripts.Components
 
             proxy.constraintActive = true;
             proxy.locked = true;
+
+            var maybeScaleConstraint = proxy.GetComponent<ScaleConstraint>();
+            if (maybeScaleConstraint)
+            {
+                Undo.RecordObject(maybeScaleConstraint, "");
+                maybeScaleConstraint.constraintActive = false;
+
+                var scaleConstraintSources = MakeSources();
+                maybeScaleConstraint.SetSources(scaleConstraintSources);
+
+                maybeScaleConstraint.constraintActive = true;
+                maybeScaleConstraint.locked = true;
+            }
         }
 
         private List<ConstraintSource> MakeSources()
