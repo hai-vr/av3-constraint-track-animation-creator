@@ -183,6 +183,8 @@ namespace Hai.ConstraintTrackAnimationCreator.Scripts.Editor.EditorUI
             var p0 = new GameObject("P0");
             p0.transform.parent = path.transform;
             p0.transform.position = neutral.transform.position;
+            p0.transform.rotation = neutral.transform.rotation;
+            p0.transform.localScale = neutral.transform.localScale;
             p0.AddComponent<ParentConstraint>().AddSource(new ConstraintSource
             {
                 sourceTransform = null,
