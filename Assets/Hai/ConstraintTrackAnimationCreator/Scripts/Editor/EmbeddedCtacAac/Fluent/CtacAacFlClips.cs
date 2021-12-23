@@ -119,6 +119,17 @@ namespace Hai.ConstraintTrackAnimationCreator.Scripts.Editor.EmbeddedCtacAac.Flu
             return new AacFlSettingCurve(Clip, new[] {binding});
         }
 
+        public AacFlSettingCurve AnimatingAnimator(AacFlParameter floatParameter)
+        {
+            var binding = new EditorCurveBinding
+            {
+                path = "",
+                type = typeof(Animator),
+                propertyName = floatParameter.Name
+            };
+            return new AacFlSettingCurve(Clip, new[] {binding});
+        }
+
         public AacFlSettingCurve Animates(Transform transform, Type type, string propertyName)
         {
             var binding = AacV0.Binding(_component, type, transform, propertyName);

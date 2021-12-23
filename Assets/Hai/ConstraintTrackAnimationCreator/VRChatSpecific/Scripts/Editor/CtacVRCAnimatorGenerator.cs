@@ -4,6 +4,7 @@ using Hai.ConstraintTrackAnimationCreator.Scripts.Components;
 using Hai.ConstraintTrackAnimationCreator.Scripts.Editor.EmbeddedCtacAac;
 using Hai.ConstraintTrackAnimationCreator.Scripts.Editor.EmbeddedCtacAac.Fluent;
 using Hai.ConstraintTrackAnimationCreator.VRChatSpecific.Scripts.Components;
+using UnityEditor.Animations;
 using UnityEngine;
 using UnityEngine.Animations;
 
@@ -120,6 +121,7 @@ namespace Hai.ConstraintTrackAnimationCreator.VRChatSpecific.Scripts.Editor
             var manualControlParameter = ManualControlParameter(layer, data.parameterName, generator);
             var autoParameter = AutoParameter(layer, data.parameterName);
             var allowSystemParameter = AllowSystemParameter(layer, data.parameterName, generator);
+            var smoothingFactorParameter = SmoothingFactorParameter(layer, data.parameterName);
             if (generator.systemIsAllowedByDefault)
             {
                 layer.ForceParameterInAnimator(allowSystemParameter, true);
@@ -131,29 +133,120 @@ namespace Hai.ConstraintTrackAnimationCreator.VRChatSpecific.Scripts.Editor
                     layer.ForceParameterInAnimator(allowSystemParameter, false);
                 }
             }
+            layer.ForceParameterInAnimator(smoothingFactorParameter, data.generator.smoothingFactor);
+
+            var autoDurationSeconds = data.generator.autoDurationSeconds;
 
             var idle = layer.NewState("Idle", 0, 0);
-            var animating = layer.NewState("Animating", 0, 1).WithAnimation(_aac.NewClip()
-                .That(clip => { clip.Animates("", typeof(Animator), aapParameter.Name).WithSecondsUnit(keyframes => keyframes.Easing(0f, 0f).Easing(9f, 0.9999f)); }));
-            var done = layer.NewState("Done", 0, 2).WithAnimation(_aac.NewClip().Looping().That(clip => clip.Animates("", typeof(Animator), aapParameter.Name).WithFixedSeconds(60f, 0.9999f)));
-            var manual = layer.NewState("ManualControl", 1, 1)
+            var auto = layer.NewState("Auto", 0, 1).WithAnimation(_aac.NewClip()
+                .That(clip => { clip.AnimatingAnimator(aapParameter).WithSecondsUnit(keyframes => keyframes.Easing(0f, 0f).Easing(autoDurationSeconds, 0.9999f)); }));
+            var reverse = layer.NewState("Reverse", 1, 1).WithAnimation(_aac.NewClip()
+                .That(clip => { clip.AnimatingAnimator(aapParameter).WithSecondsUnit(keyframes => keyframes.Easing(0f, 0.999f).Easing(autoDurationSeconds, 0.9999f)); }));
+            var done = layer.NewState("Done", 0, 2).WithAnimation(_aac.NewClip().Looping().That(clip => clip.AnimatingAnimator(aapParameter).WithFixedSeconds(60f, 0.9999f)));
+            var manual = layer.NewState("ManualControl", 3, 1)
                 .NormalizedTime(manualControlParameter)
-                .WithAnimation(_aac.NewClip().Looping().That(clip => clip.Animates("", typeof(Animator), aapParameter.Name).WithSecondsUnit(keyframes => keyframes.Easing(0f, 0f).Easing(1f, 0.9999f))));
+                .WithAnimation(_aac.NewClip().Looping().That(clip => clip.AnimatingAnimator(aapParameter).WithSecondsUnit(keyframes => keyframes.Easing(0f, 0f).Easing(1f, 0.9999f))));
 
-            animating.TransitionsTo(done).AfterAnimationFinishes();
+            var zeroClip = _aac.NewClip().That(clip => clip.AnimatingAnimator(aapParameter).WithOneFrame(0f));
+            var oneClip = _aac.NewClip().That(clip => clip.AnimatingAnimator(aapParameter).WithOneFrame(1f));
+            // var proxyTree = CreateProxyTree(manualControlParameter, zeroClip, oneClip);
+            // var smoothingTree = CreateSmoothingTree(aapParameter, zeroClip, oneClip);
+            // var factorTree = CreateFactorTree(smoothingFactorParameter, proxyTree, smoothingTree);
 
-            idle.TransitionsTo(animating).When(autoParameter.IsTrue()).And(allowSystemParameter.IsTrue()).And(manualControlParameter.IsLessThan(0.01f));
-            animating.TransitionsTo(idle).When(autoParameter.IsFalse()).Or().When(allowSystemParameter.IsFalse());
-            done.TransitionsTo(idle).When(autoParameter.IsFalse()).And(manualControlParameter.IsLessThan(0.01f)).Or().When(allowSystemParameter.IsFalse());
-            manual.TransitionsTo(idle).When(manualControlParameter.IsLessThan(0.01f)).Or().When(allowSystemParameter.IsFalse());
+            // Automatic Cycle
+            idle.TransitionsTo(auto).When(autoParameter.IsTrue()).And(allowSystemParameter.IsTrue()).And(manualControlParameter.IsLessThan(0.01f));
+            auto.TransitionsTo(done).AfterAnimationFinishes();
+            done.TransitionsTo(reverse).When(autoParameter.IsFalse()).And(allowSystemParameter.IsTrue()).And(manualControlParameter.IsLessThan(0.01f));
+            reverse.TransitionsTo(idle).AfterAnimationFinishes();
 
-            idle.TransitionsTo(manual).When(manualControlParameter.IsGreaterThan(0.01f)).And(allowSystemParameter.IsTrue());
-            animating.TransitionsTo(manual).When(manualControlParameter.IsGreaterThan(0.01f)).And(allowSystemParameter.IsTrue());
+            // Automatic Cycle without Reverse
+            // auto.TransitionsTo(idle).When(autoParameter.IsFalse());
+            // done.TransitionsTo(idle).When(autoParameter.IsFalse()).And(manualControlParameter.IsLessThan(0.01f));
 
+            // Manual Cycle
+            foreach (var moveToManual in new[] {idle, auto, reverse})
+            {
+                moveToManual.TransitionsTo(manual).When(manualControlParameter.IsGreaterThan(0.01f)).And(allowSystemParameter.IsTrue());
+            }
             manual.TransitionsTo(done).When(manualControlParameter.IsGreaterThan(0.99f)).And(allowSystemParameter.IsTrue());
             done.TransitionsTo(manual).When(manualControlParameter.IsLessThan(0.99f)).And(manualControlParameter.IsGreaterThan(0.01f)).And(allowSystemParameter.IsTrue());
+            manual.TransitionsTo(idle).When(manualControlParameter.IsLessThan(0.01f));
+
+            // Allow System Immediate Shutoff
+            foreach (var cancelWhenNotAllowed in new[] {auto, reverse, manual, done})
+            {
+                cancelWhenNotAllowed.TransitionsTo(idle).When(allowSystemParameter.IsFalse());
+            }
 
             layer.WithAvatarMaskNoTransforms();
+        }
+
+        private BlendTree CreateProxyTree(AacFlFloatParameter manualControlParameter, AacFlClip zeroClip, AacFlClip oneClip)
+        {
+            var proxyTree = _aac.NewBlendTreeAsRaw();
+            proxyTree.blendParameter = manualControlParameter.Name;
+            proxyTree.blendType = BlendTreeType.Simple1D;
+            proxyTree.minThreshold = 0;
+            proxyTree.maxThreshold = 1;
+            proxyTree.useAutomaticThresholds = true;
+            proxyTree.children = new[]
+            {
+                new ChildMotion {motion = zeroClip.Clip, timeScale = 1, threshold = 0},
+                new ChildMotion {motion = oneClip.Clip, timeScale = 1, threshold = 1}
+            };
+            return proxyTree;
+        }
+
+        private BlendTree CreateSmoothingTree(AacFlFloatParameter aapParameter, AacFlClip zeroClip, AacFlClip oneClip)
+        {
+            var smoothingTree = _aac.NewBlendTreeAsRaw();
+            smoothingTree.blendParameter = aapParameter.Name;
+            smoothingTree.blendType = BlendTreeType.Simple1D;
+            smoothingTree.minThreshold = 0;
+            smoothingTree.maxThreshold = 1;
+            smoothingTree.useAutomaticThresholds = true;
+            smoothingTree.children = new[]
+            {
+                new ChildMotion {motion = zeroClip.Clip, timeScale = 1, threshold = 0},
+                new ChildMotion {motion = oneClip.Clip, timeScale = 1, threshold = 1}
+            };
+            return smoothingTree;
+        }
+
+        private BlendTree CreateFactorTree(AacFlFloatParameter smoothingFactorParameter, BlendTree proxyTree, BlendTree smoothingTree)
+        {
+            var factorTree = _aac.NewBlendTreeAsRaw();
+            {
+                factorTree.blendParameter = smoothingFactorParameter.Name;
+                factorTree.blendType = BlendTreeType.Simple1D;
+                factorTree.minThreshold = 0;
+                factorTree.maxThreshold = 1;
+                factorTree.useAutomaticThresholds = true;
+                factorTree.children = new[]
+                {
+                    new ChildMotion {motion = proxyTree, timeScale = 1, threshold = 0},
+                    new ChildMotion {motion = smoothingTree, timeScale = 1, threshold = 1}
+                };
+            }
+            return factorTree;
+        }
+
+        private static BlendTree InterpolationTree(string param, string zeroClip, string oneClip)
+        {
+            return new BlendTree
+            {
+                name = "autoBT_" + param + "_Interp",
+                blendParameter = param,
+                blendType = BlendTreeType.Simple1D,
+                minThreshold = 0,
+                maxThreshold = 1,
+                useAutomaticThresholds = true,
+                children = new[]
+                {
+                    new ChildMotion {motion = AssetDatabase.LoadAssetAtPath<AnimationClip>(zeroClip), timeScale = 1, threshold = 0},
+                    new ChildMotion {motion = AssetDatabase.LoadAssetAtPath<AnimationClip>(oneClip), timeScale = 1, threshold = 1}},
+                hideFlags = HideFlags.HideInHierarchy
+            };
         }
 
         private void CreateMotionLayer(ConstraintTrackVRCGenerator generator, AacFlClip neverEnabled, AacFlClip whenMoving, AacFlClip offButEnabledOnce)
@@ -185,6 +278,11 @@ namespace Hai.ConstraintTrackAnimationCreator.VRChatSpecific.Scripts.Editor
         private static AacFlBoolParameter AllowSystemParameter(AacV0.AacFlLayer layer, string paramName, ConstraintTrackVRCGenerator generator)
         {
             return layer.BoolParameter(generator.systemIsAllowedByDefault || HasNoCustomAllowSystemName(generator) ? paramName + "_Allow" : generator.optionalAllowSystemParamName);
+        }
+
+        private static AacFlFloatParameter SmoothingFactorParameter(AacV0.AacFlLayer layer, string paramName)
+        {
+            return layer.FloatParameter(paramName + "_SmoothingFactor");
         }
 
         private static bool HasNoCustomAllowSystemName(ConstraintTrackVRCGenerator generator)
