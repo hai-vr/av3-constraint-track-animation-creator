@@ -18,6 +18,8 @@ namespace Hai.ConstraintTrackAnimationCreator.Scripts.Editor.EditorUI
         {
             var bones = serializedObject.FindProperty(nameof(ConstraintTrackSetup.bones));
             var neutrals = serializedObject.FindProperty(nameof(ConstraintTrackSetup.neutrals));
+            var ignoreBoneRotation = serializedObject.FindProperty(nameof(ConstraintTrackSetup.ignoreBoneRotation));
+            var ignoreBoneScale = serializedObject.FindProperty(nameof(ConstraintTrackSetup.ignoreBoneScale));
 
             var neutralsAreCreated = neutrals.arraySize > 0;
 
@@ -27,6 +29,8 @@ namespace Hai.ConstraintTrackAnimationCreator.Scripts.Editor.EditorUI
 
             EditorGUI.BeginDisabledGroup(neutralsAreCreated);
             EditorGUILayout.PropertyField(bones);
+            EditorGUILayout.PropertyField(ignoreBoneRotation);
+            EditorGUILayout.PropertyField(ignoreBoneScale);
             EditorGUI.EndDisabledGroup();
             EditorGUILayout.PropertyField(serializedObject.FindProperty(nameof(ConstraintTrackSetup.gizmoDirection)));
             EditorGUILayout.PropertyField(serializedObject.FindProperty(nameof(ConstraintTrackSetup.gizmoScale)));
@@ -69,6 +73,15 @@ namespace Hai.ConstraintTrackAnimationCreator.Scripts.Editor.EditorUI
                 var neutral = new GameObject();
                 neutral.transform.parent = thatBone.parent;
                 neutral.transform.position = thatBone.transform.position;
+                if (!that.ignoreBoneRotation)
+                {
+                    neutral.transform.rotation = thatBone.transform.rotation;
+                }
+                if (!that.ignoreBoneScale)
+                {
+                    neutral.transform.localScale = thatBone.transform.localScale;
+                }
+                // FIXME: The rotation is not copied????!!!! This may be a good thing? Provide an option?
                 neutral.name = thatBone.name + "_NEUTRAL";
                 Undo.RegisterCreatedObjectUndo(neutral, "");
 

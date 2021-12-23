@@ -10,7 +10,9 @@ namespace Hai.ConstraintTrackAnimationCreator.Scripts.Editor.EditorUI.Localizati
             UpdateAllConstraintTracks,
             RegenerateAnimator,
             CreateNeutralObjects,
-            ConfirmSetup
+            ConfirmSetup,
+            DetachBone,
+            ShowBonesDetachEditor
         }
 
         public static string Localize(Phrase phrase)
@@ -27,6 +29,10 @@ namespace Hai.ConstraintTrackAnimationCreator.Scripts.Editor.EditorUI.Localizati
                     return "Create Neutral Objects";
                 case Phrase.ConfirmSetup:
                     return "Confirm Setup";
+                case Phrase.DetachBone:
+                    return "Detach Bone";
+                case Phrase.ShowBonesDetachEditor:
+                    return "Show Bones Detach Editor";
                 default:
                     throw new ArgumentOutOfRangeException(nameof(phrase), phrase, null);
             }
