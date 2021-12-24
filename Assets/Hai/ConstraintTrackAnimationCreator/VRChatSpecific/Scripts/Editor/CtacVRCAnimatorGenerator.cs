@@ -21,6 +21,7 @@ namespace Hai.ConstraintTrackAnimationCreator.VRChatSpecific.Scripts.Editor
 
         public void Create()
         {
+            _aac.ResetAssetHolder();
             var data = _aac.Get();
 
             var cta = data.generator.constraintTrackAnimation;
@@ -312,18 +313,7 @@ namespace Hai.ConstraintTrackAnimationCreator.VRChatSpecific.Scripts.Editor
 
         private static AacFlFloatParameter ManualControlParameter(AacV0.AacFlLayer layer, string paramName, ConstraintTrackVRCGenerator generator)
         {
-            var manualControlParameterName = ToManualControlParameterName(generator);
-            return layer.FloatParameter(paramName + manualControlParameterName);
-        }
-
-        private static string ToManualControlParameterName(ConstraintTrackVRCGenerator generator)
-        {
-            switch (generator.floatType)
-            {
-                case ConstraintTrackVRCGenerator.CtacVRCFloatType.Manual: return "_Manual";
-                default:
-                    throw new ArgumentOutOfRangeException();
-            }
+            return layer.FloatParameter($"{paramName}_Manual");
         }
     }
 }

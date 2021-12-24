@@ -1,8 +1,11 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using Hai.ConstraintTrackAnimationCreator.Scripts.Editor.EditorUI.Localization;
+using Hai.ConstraintTrackAnimationCreator.Scripts.Editor.EmbeddedCtacAac;
 using Hai.ConstraintTrackAnimationCreator.VRChatSpecific.Scripts.Components;
 using UnityEditor;
+using UnityEditor.Animations;
 using UnityEngine;
 using UnityEngine.Animations;
 
@@ -14,6 +17,7 @@ namespace Hai.ConstraintTrackAnimationCreator.VRChatSpecific.Scripts.Editor.Edit
         public override void OnInspectorGUI()
         {
             DrawDefaultInspector();
+            EditorGUILayout.Separator();
 
             if (GUILayout.Button(CtacLocalization.Localize(CtacLocalization.Phrase.UpdateAllConstraintTracks)))
             {
@@ -24,7 +28,6 @@ namespace Hai.ConstraintTrackAnimationCreator.VRChatSpecific.Scripts.Editor.Edit
             {
                 RegenerateAnimator();
             }
-
 
             var isOptimized = IsOptimized();
             if (!isOptimized)
@@ -43,6 +46,9 @@ namespace Hai.ConstraintTrackAnimationCreator.VRChatSpecific.Scripts.Editor.Edit
                     OpenForEditing();
                 }
             }
+            EditorGUI.BeginDisabledGroup(true);
+            EditorGUILayout.PropertyField(serializedObject.FindProperty(nameof(ConstraintTrackVRCGenerator.assetHolder)));
+            EditorGUI.EndDisabledGroup();
         }
 
         private bool IsOptimized()
@@ -117,12 +123,23 @@ namespace Hai.ConstraintTrackAnimationCreator.VRChatSpecific.Scripts.Editor.Edit
         private void RegenerateAnimator()
         {
             var that = That();
+            if (that.assetHolder == null)
+            {
+                that.assetHolder = new AnimatorController();
+                AssetDatabase.CreateAsset(that.assetHolder, "Assets/GeneratedCTAC__" + DateTime.Now.ToString("yyyy'-'MM'-'dd'_'HHmmss") + ".asset");
+            }
+
             var generator = new CtacVRCAnimatorGenerator(new CtacController
             {
                 avatar = that.avatar,
                 generator = that,
-                layerNameSuffix = that.trackName,
-                parameterName = that.trackName
+                layerNameSuffix = that.layerName,
+                parameterName = that.parameterPrefixName,
+                assetHolder = that.assetHolder,
+                _internal = new AacInternal
+                {
+                    assetKey = that.assetKey
+                }
             });
             generator.Create();
         }

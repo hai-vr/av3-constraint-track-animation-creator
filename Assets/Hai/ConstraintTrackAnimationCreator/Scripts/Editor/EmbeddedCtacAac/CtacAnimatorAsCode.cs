@@ -1,4 +1,5 @@
 ﻿using System;
+using UnityEditor.Animations;
 using VRC.SDK3.Avatars.Components;
 
 namespace Hai.ConstraintTrackAnimationCreator.Scripts.Editor.EmbeddedCtacAac
@@ -6,6 +7,7 @@ namespace Hai.ConstraintTrackAnimationCreator.Scripts.Editor.EmbeddedCtacAac
     public class AnimatorAsCode
     {
         public VRCAvatarDescriptor avatar;
+        public AnimatorController assetHolder;
         public string layerNameSuffix;
         public string parameterName;
 

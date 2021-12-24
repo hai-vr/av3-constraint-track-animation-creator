@@ -240,7 +240,8 @@ namespace Hai.ConstraintTrackAnimationCreator.Scripts.Editor.EditorUI
             var vrcGenerator = generatorGo.AddComponent<ConstraintTrackVRCGenerator>();
             vrcGenerator.constraintTrackAnimation = constraintTrackAnimation;
             vrcGenerator.avatar = avatar;
-            vrcGenerator.trackName = systemName;
+            vrcGenerator.layerName = systemName;
+            vrcGenerator.parameterPrefixName = systemName;
 
             return vrcGenerator;
         }
