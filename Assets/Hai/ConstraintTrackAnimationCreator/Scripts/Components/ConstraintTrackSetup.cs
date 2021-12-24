@@ -8,7 +8,7 @@ namespace Hai.ConstraintTrackAnimationCreator.Scripts.Components
         public Transform[] neutrals;
         public bool ignoreBoneRotation = true;
         public bool ignoreBoneScale = true;
-        public bool generateScaleConstraint;
+        public bool generateScaleConstraint = true;
 
         public SingleConstraintTrack.CtacGizmoDirection gizmoDirection;
         public float gizmoScale = 1f;

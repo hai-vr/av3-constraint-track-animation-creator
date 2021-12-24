@@ -71,13 +71,8 @@ namespace Hai.ConstraintTrackAnimationCreator.VRChatSpecific.Scripts.Editor
                     for (var trackIndex = 0; trackIndex < cta.tracks.Length; trackIndex++)
                     {
                         var singleConstraintTrack = cta.tracks[trackIndex];
-                        var timingConfig = trackIndex < cta.optionalTimings.Length ? cta.optionalTimings[trackIndex] : new ConstraintTrackAnimation.TrackTiming
-                        {
-                            scale = 1f,
-                            delayStartSeconds = 0
-                        };
-                        var scaleCorrected = timingConfig.scale == 0f ? 1f : timingConfig.scale;
-                        var timings = singleConstraintTrack.Timings(scaleCorrected * cta.globalTimingScale, timingConfig.delayStartSeconds);
+                        var scaleCorrected = singleConstraintTrack.timingScale == 0f ? 1f : singleConstraintTrack.timingScale;
+                        var timings = singleConstraintTrack.Timings(scaleCorrected * cta.globalTimingScale, singleConstraintTrack.timingDelayStartSeconds);
 
 
                         var currentTrackProxyConstraints = new []{singleConstraintTrack.proxy};
@@ -201,7 +196,7 @@ namespace Hai.ConstraintTrackAnimationCreator.VRChatSpecific.Scripts.Editor
             {
                 manual.TransitionsTo(done).When(aapParameter.IsGreaterThan(0.99f)).And(allowSystemParameter.IsTrue());
                 done.TransitionsTo(manual).When(manualControlParameter.IsLessThan(0.99f)).And(manualControlParameter.IsGreaterThan(0.01f)).And(allowSystemParameter.IsTrue());
-                manual.TransitionsTo(idle).When(aapParameter.IsLessThan(0.01f));
+                manual.TransitionsTo(idle).When(manualControlParameter.IsLessThan(0.01f)).And(aapParameter.IsLessThan(0.01f));
             }
             else
             {

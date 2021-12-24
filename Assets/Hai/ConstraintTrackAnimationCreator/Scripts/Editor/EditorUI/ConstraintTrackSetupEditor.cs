@@ -224,11 +224,6 @@ namespace Hai.ConstraintTrackAnimationCreator.Scripts.Editor.EditorUI
 
             var constraintTrackAnimation = ctaGo.AddComponent<ConstraintTrackAnimation>();
             constraintTrackAnimation.tracks = tracks.ToArray();
-            constraintTrackAnimation.optionalTimings = Enumerable.Repeat(new ConstraintTrackAnimation.TrackTiming
-            {
-                delayStartSeconds = 0f,
-                scale = 1f
-            }, tracks.Count).ToArray();
             constraintTrackAnimation.parentOfAllTracks = that.gameObject;
 
             return constraintTrackAnimation;

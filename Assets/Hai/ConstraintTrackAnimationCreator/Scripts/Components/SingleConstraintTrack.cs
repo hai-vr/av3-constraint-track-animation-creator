@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 using UnityEngine.Animations;
+using UnityEngine.Serialization;
 #if UNITY_EDITOR
 using UnityEditor;
 #endif
@@ -19,7 +20,10 @@ namespace Hai.ConstraintTrackAnimationCreator.Scripts.Components
         public bool gizmoAlwaysVisible = true;
         public CtacGizmoDirection gizmoDirection;
         public float gizmoScale = 1f;
-        public float paddingDistance = 0.01f;
+
+        [FormerlySerializedAs("paddingDistance")] public float timingPaddingDistance = 0.01f;
+        public float timingDelayStartSeconds;
+        public float timingScale = 1f;
 
         [Serializable]
         public enum CtacGizmoDirection
@@ -154,7 +158,7 @@ namespace Hai.ConstraintTrackAnimationCreator.Scripts.Components
             var transforms = whichHierarchy.Cast<Transform>().ToArray();
             var timings = new List<float> {0f};
             var total = 0f;
-            var safePaddingDistance = paddingDistance < 0 ? 0f : paddingDistance;
+            var safePaddingDistance = timingPaddingDistance < 0 ? 0f : timingPaddingDistance;
             foreach (var currentTransform in transforms)
             {
                 var current = currentTransform.position;

@@ -1,5 +1,4 @@
-﻿using System;
-using UnityEngine;
+﻿using UnityEngine;
 
 namespace Hai.ConstraintTrackAnimationCreator.Scripts.Components
 {
@@ -7,16 +6,9 @@ namespace Hai.ConstraintTrackAnimationCreator.Scripts.Components
     {
         public SingleConstraintTrack[] tracks;
         public GameObject parentOfAllTracks;
-        public TrackTiming[] optionalTimings;
-        public float globalTimingScale = 10f;
         public AnimationClip optionalAnimationActive;
         public AnimationClip optionalAnimationInactive;
 
-        [Serializable]
-        public struct TrackTiming
-        {
-            public float delayStartSeconds;
-            public float scale;
-        }
+        [HideInInspector] public float globalTimingScale = 10f;
     }
 }
