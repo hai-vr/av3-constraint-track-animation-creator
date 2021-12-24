@@ -20,10 +20,13 @@ namespace Hai.ConstraintTrackAnimationCreator.Scripts.Components
         public bool gizmoAlwaysVisible = true;
         public CtacGizmoDirection gizmoDirection;
         public float gizmoScale = 1f;
+        public bool gizmoIncludeTransformScale = true;
 
         [FormerlySerializedAs("paddingDistance")] public float timingPaddingDistance = 0.01f;
         public float timingDelayStartSeconds;
         public float timingScale = 1f;
+        private static readonly Color ColorGood = Color.cyan;
+        private static readonly Color ColorBad = Color.red;
 
         [Serializable]
         public enum CtacGizmoDirection
@@ -58,17 +61,17 @@ namespace Hai.ConstraintTrackAnimationCreator.Scripts.Components
                 var pathTransforms = path.Cast<Transform>().Where(t => t != null).ToArray();
                 if (pathTransforms.Length > 0)
                 {
-                    DrawPath(guiStyle, pathTransforms, Color.red);
+                    DrawPath(guiStyle, pathTransforms, ColorBad);
                 }
             }
 
             if (proxy != null)
             {
-                Handles.color = Color.green;
+                Handles.color = ColorGood;
                 var direction = GizmoDirectionAsVector();
                 Handles.DrawWireDisc(proxy.transform.position, direction, 0.03f * gizmoScale);
                 Handles.DrawWireDisc(proxy.transform.position, direction, 0.025f * gizmoScale);
-                DrawVertex(proxy.transform, "", guiStyle, gizmoScale * 0.75f);
+                DrawVertex(proxy.transform, "", guiStyle);
             }
         }
 
@@ -94,23 +97,23 @@ namespace Hai.ConstraintTrackAnimationCreator.Scripts.Components
             guiStyle.normal.textColor = Color.yellow;
 
             Handles.DrawLine(neutral.position, transforms[0].position);
-            DrawVertex(neutral, "N", guiStyle, gizmoScale);
+            DrawVertex(neutral, "N", guiStyle);
 
             for (var index = 0; index < transforms.Length - 1; index++)
             {
-                Handles.color = IsConstraintActive(transforms[index]) ? Color.green : colorIdle;
+                Handles.color = IsConstraintActive(transforms[index]) ? ColorGood : colorIdle;
                 Handles.DrawLine(transforms[index].position, transforms[index + 1].position);
-                DrawVertex(transforms[index], index + "", guiStyle, gizmoScale);
+                DrawVertex(transforms[index], index + "", guiStyle);
             }
 
-            DrawVertex(transforms[transforms.Length - 1], transforms.Length - 1 + "", guiStyle, gizmoScale);
+            DrawVertex(transforms[transforms.Length - 1], transforms.Length - 1 + "", guiStyle);
         }
 
-        private static void DrawVertex(Transform that, string text, GUIStyle guiStyle, float gizmoScale)
+        private void DrawVertex(Transform that, string text, GUIStyle guiStyle)
         {
             var originalColor = Handles.color;
 
-            var color = IsConstraintActive(that) ? Color.green : Color.red;
+            var color = IsConstraintActive(that) ? ColorGood : ColorBad;
             Handles.color = color;
             guiStyle.normal.textColor = color;
 
@@ -119,23 +122,26 @@ namespace Hai.ConstraintTrackAnimationCreator.Scripts.Components
             var right = that.right;
             var up = that.up;
             var forward = that.forward;
+            var xx = gizmoIncludeTransformScale ? that.localScale.x : 1f;
+            var yy = gizmoIncludeTransformScale ? that.localScale.y : 1f;
+            var zz = gizmoIncludeTransformScale ? that.localScale.z : 1f;
             for (var i = 0; i < 2; i++)
             {
-                var rightSize = 0.0065f * gizmoScale;
+                var rightSize = 0.0065f * gizmoScale * zz;
                 if (i == 1) rightSize = -rightSize;
                 Handles.DrawAAPolyLine(
-                    pos + right * forwardSize + up * forwardSize + forward * rightSize,
-                    pos + right * forwardSize - up * forwardSize + forward * rightSize,
-                    pos - right * forwardSize - up * forwardSize + forward * rightSize,
-                    pos - right * forwardSize + up * forwardSize + forward * rightSize,
-                    pos + right * forwardSize + up * forwardSize + forward * rightSize
+                    pos + right * forwardSize * xx + up * forwardSize * yy + forward * rightSize,
+                    pos + right * forwardSize * xx - up * forwardSize * yy + forward * rightSize,
+                    pos - right * forwardSize * xx - up * forwardSize * yy + forward * rightSize,
+                    pos - right * forwardSize * xx + up * forwardSize * yy + forward * rightSize,
+                    pos + right * forwardSize * xx + up * forwardSize * yy + forward * rightSize
                 );
             }
 
             var lineSize = 0.02f * gizmoScale;
-            Handles.color = Color.red; Handles.DrawLine(pos, pos + right * lineSize);
-            Handles.color = Color.green; Handles.DrawLine(pos, pos + up * lineSize);
-            Handles.color = Color.blue; Handles.DrawLine(pos, pos + forward * lineSize);
+            Handles.color = Color.red; Handles.DrawLine(pos, pos + right * lineSize * that.localScale.x);
+            Handles.color = Color.green; Handles.DrawLine(pos, pos + up * lineSize * that.localScale.y);
+            Handles.color = Color.blue; Handles.DrawLine(pos, pos + forward * lineSize * zz);
             Handles.color = originalColor;
         }
 
