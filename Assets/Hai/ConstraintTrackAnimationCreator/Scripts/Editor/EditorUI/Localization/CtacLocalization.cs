@@ -18,7 +18,11 @@ namespace Hai.ConstraintTrackAnimationCreator.Scripts.Editor.EditorUI.Localizati
             RevertWithoutRemoving,
             FixModelUpdate,
             Advanced,
-            RevertPrefabBonesArray
+            RevertPrefabBonesArray,
+            Optimize,
+            OpenForEditing,
+            WhenIsNotOptimized,
+            WhenIsOptimized
         }
 
         public static string Localize(Phrase phrase)
@@ -51,6 +55,15 @@ namespace Hai.ConstraintTrackAnimationCreator.Scripts.Editor.EditorUI.Localizati
                     return "Advanced";
                 case Phrase.RevertPrefabBonesArray:
                     return "Revert Prefab Bones Array";
+                case Phrase.Optimize:
+                    return "Optimize";
+                case Phrase.OpenForEditing:
+                    return "Open For Editing";
+                case Phrase.WhenIsNotOptimized:
+                    return "If you think you're finished, click Optimize.\n" +
+                           "This will disable the constraints on the bones, and disable the system GameObject.";
+                case Phrase.WhenIsOptimized:
+                    return "The system is optimized. Click Open For Editing to un-optimize and edit the paths again.";
                 default:
                     throw new ArgumentOutOfRangeException(nameof(phrase), phrase, null);
             }
