@@ -1,4 +1,6 @@
-﻿using System.Linq;
+﻿using System;
+using System.Globalization;
+using System.Linq;
 using Hai.ConstraintTrackAnimationCreator.Scripts.Components;
 using Hai.ConstraintTrackAnimationCreator.Scripts.Editor.EditorUI.Localization;
 using UnityEditor;
@@ -9,20 +11,33 @@ namespace Hai.ConstraintTrackAnimationCreator.Scripts.Editor.EditorUI
     [CustomEditor(typeof(BoneDetachTool))]
     public class BoneDetachToolEditor : UnityEditor.Editor
     {
+        private static bool _enableDetachEditor;
+
         public override void OnInspectorGUI()
         {
-            EditorGUILayout.PropertyField(serializedObject.FindProperty(nameof(BoneDetachTool.skinnedMesh)));
-
             var that = That();
-            that.enableDetachEditor = EditorGUILayout.Foldout(that.enableDetachEditor, CtacLocalization.Localize(CtacLocalization.Phrase.ShowBonesDetachEditor));
-            if (that.enableDetachEditor && that.skinnedMesh != null)
+            var anyDetachedBones = that.detachments.Length > 0;
+            EditorGUI.BeginDisabledGroup(anyDetachedBones);
+            EditorGUILayout.PropertyField(serializedObject.FindProperty(nameof(BoneDetachTool.skinnedMesh)));
+            EditorGUI.EndDisabledGroup();
+
+            _enableDetachEditor = EditorGUILayout.Foldout(_enableDetachEditor, CtacLocalization.Localize(CtacLocalization.Phrase.ShowBonesDetachEditor));
+            if (_enableDetachEditor && that.skinnedMesh != null)
             {
+                SumVertexWeightsPerBone(that, out int[] boneToVertexCount, out float[] boneToTotalWeight);
+
                 GUILayout.BeginVertical("GroupBox");
                 for (var index = 0; index < that.skinnedMesh.bones.Length; index++)
                 {
+                    var vertexCount = boneToVertexCount[index];
+                    var totalWeight = boneToTotalWeight[index];
+                    // Hips bone often has a total weight of 0.0, so exclude it
+                    if (vertexCount == 0 || totalWeight == 0f) continue;
+
                     Transform smrBone = that.skinnedMesh.bones[index];
                     GUILayout.BeginHorizontal();
                     EditorGUILayout.ObjectField(smrBone, typeof(Transform));
+                    EditorGUILayout.LabelField(string.Format(CultureInfo.InvariantCulture, "{0:0.0}", totalWeight), GUILayout.Width(60));
 
                     EditorGUI.BeginDisabledGroup(IsSmrBoneInAnyMemberOfDetachment(smrBone));
                     if (GUILayout.Button(CtacLocalization.Localize(CtacLocalization.Phrase.DetachBone)))
@@ -38,7 +53,7 @@ namespace Hai.ConstraintTrackAnimationCreator.Scripts.Editor.EditorUI
 
             serializedObject.ApplyModifiedProperties();
 
-            if (that.detachments.Length > 0)
+            if (anyDetachedBones)
             {
                 GUILayout.BeginVertical("GroupBox");
                 if (GUILayout.Button(CtacLocalization.Localize(CtacLocalization.Phrase.FixModelUpdate)))
@@ -75,6 +90,26 @@ namespace Hai.ConstraintTrackAnimationCreator.Scripts.Editor.EditorUI
                 }
                 GUILayout.EndVertical();
             }
+        }
+
+        private static void SumVertexWeightsPerBone(BoneDetachTool that, out int[] boneToVertexCount, out float[] boneToTotalWeight)
+        {
+            boneToVertexCount = new int[that.skinnedMesh.bones.Length];
+            boneToTotalWeight = new float[that.skinnedMesh.bones.Length];
+            foreach (var sharedMeshBoneWeight in that.skinnedMesh.sharedMesh.boneWeights)
+            {
+                Increment(boneToVertexCount, boneToTotalWeight, sharedMeshBoneWeight.boneIndex0, sharedMeshBoneWeight.weight0);
+                Increment(boneToVertexCount, boneToTotalWeight, sharedMeshBoneWeight.boneIndex1, sharedMeshBoneWeight.weight1);
+                Increment(boneToVertexCount, boneToTotalWeight, sharedMeshBoneWeight.boneIndex2, sharedMeshBoneWeight.weight2);
+                Increment(boneToVertexCount, boneToTotalWeight, sharedMeshBoneWeight.boneIndex3, sharedMeshBoneWeight.weight3);
+            }
+        }
+
+        private static void Increment(int[] boneToVertexCount, float[] boneToTotalWeight, int index, float weight)
+        {
+            if (index < 0 || index >= boneToVertexCount.Length) return;
+            boneToVertexCount[index]++;
+            boneToTotalWeight[index] += weight;
         }
 
         private bool IsSmrBoneInAnyMemberOfDetachment(Transform smrBone)

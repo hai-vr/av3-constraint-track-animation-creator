@@ -6,8 +6,7 @@ namespace Hai.ConstraintTrackAnimationCreator.Scripts.Components
     public class BoneDetachTool : MonoBehaviour
     {
         public SkinnedMeshRenderer skinnedMesh;
-        public bool enableDetachEditor = true;
-        public bool advancedFoldout = false;
+        public bool advancedFoldout;
         public Detachment[] detachments = new Detachment[0];
 
         [Serializable]
