@@ -83,7 +83,6 @@ namespace Hai.ConstraintTrackAnimationCreator.Scripts.Editor.EditorUI
                 {
                     neutral.transform.localScale = thatBone.transform.localScale;
                 }
-                // FIXME: The rotation is not copied????!!!! This may be a good thing? Provide an option?
                 neutral.name = thatBone.name + "_NEUTRAL";
                 Undo.RegisterCreatedObjectUndo(neutral, "");
 

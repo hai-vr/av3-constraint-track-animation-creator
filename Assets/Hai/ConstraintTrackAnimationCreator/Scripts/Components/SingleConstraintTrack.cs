@@ -191,7 +191,8 @@ namespace Hai.ConstraintTrackAnimationCreator.Scripts.Components
         {
             Undo.RecordObject(proxy, "");
             proxy.constraintActive = false;
-            // FIXME: Question: Isn't this dangerous to do since the bone is already copying the proxy???
+            // TODO: Question: Isn't this dangerous to do since the bone is already copying the proxy???
+            // TODO: Answer: Probably not as this ensures that the position is correct when activating the constraint again?
             proxy.transform.position = neutral.position;
             proxy.transform.rotation = neutral.rotation;
 
