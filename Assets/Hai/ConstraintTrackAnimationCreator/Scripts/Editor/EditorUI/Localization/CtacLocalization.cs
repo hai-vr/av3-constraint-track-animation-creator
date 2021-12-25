@@ -4,6 +4,8 @@ namespace Hai.ConstraintTrackAnimationCreator.Scripts.Editor.EditorUI.Localizati
 {
     public class CtacLocalization
     {
+        public const string ManualUrl = "https://hai-vr.notion.site/Constraint-Track-Animation-Creator-b8e60b42401140e28b2ba05ff21b71bd";
+
         public enum Phrase
         {
             UpdateConstraintTrack,
@@ -22,7 +24,10 @@ namespace Hai.ConstraintTrackAnimationCreator.Scripts.Editor.EditorUI.Localizati
             Optimize,
             OpenForEditing,
             WhenIsNotOptimized,
-            WhenIsOptimized
+            WhenIsOptimized,
+            OpenDocumentation,
+            ChangeName,
+            NotInAvatar
         }
 
         public static string Localize(Phrase phrase)
@@ -64,6 +69,12 @@ namespace Hai.ConstraintTrackAnimationCreator.Scripts.Editor.EditorUI.Localizati
                            "This will disable the constraints on the bones, and disable the system GameObject.";
                 case Phrase.WhenIsOptimized:
                     return "The system is optimized. Click Open For Editing to un-optimize and edit the paths again.";
+                case Phrase.OpenDocumentation:
+                    return "Documentation / 説明書 / 설명서 ";
+                case Phrase.ChangeName:
+                    return "Change the name of this object.";
+                case Phrase.NotInAvatar:
+                    return "Move this object to be inside your avatar.";
                 default:
                     throw new ArgumentOutOfRangeException(nameof(phrase), phrase, null);
             }

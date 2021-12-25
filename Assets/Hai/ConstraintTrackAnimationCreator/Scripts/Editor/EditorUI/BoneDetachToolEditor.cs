@@ -90,6 +90,12 @@ namespace Hai.ConstraintTrackAnimationCreator.Scripts.Editor.EditorUI
                 }
                 GUILayout.EndVertical();
             }
+
+            EditorGUILayout.Separator();
+            if (GUILayout.Button(CtacLocalization.Localize(CtacLocalization.Phrase.OpenDocumentation)))
+            {
+                Application.OpenURL(CtacLocalization.ManualUrl);
+            }
         }
 
         private static void SumVertexWeightsPerBone(BoneDetachTool that, out int[] boneToVertexCount, out float[] boneToTotalWeight)

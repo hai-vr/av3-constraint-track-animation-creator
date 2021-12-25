@@ -26,6 +26,12 @@ namespace Hai.ConstraintTrackAnimationCreator.Scripts.Editor.EditorUI
 
             var goSerializedObject = new SerializedObject(That().gameObject);
             EditorGUILayout.PropertyField(goSerializedObject.FindProperty("m_Name"), new GUIContent("System Name"));
+            var objName = goSerializedObject.targetObject.name;
+            var isDefaultName = objName.StartsWith("GameObject") || objName.Contains("MyTrack");
+            if (isDefaultName)
+            {
+                EditorGUILayout.HelpBox(CtacLocalization.Localize(CtacLocalization.Phrase.ChangeName), MessageType.Error);
+            }
             goSerializedObject.ApplyModifiedProperties();
 
             EditorGUI.BeginDisabledGroup(neutralsAreCreated);
@@ -38,6 +44,7 @@ namespace Hai.ConstraintTrackAnimationCreator.Scripts.Editor.EditorUI
             EditorGUILayout.PropertyField(serializedObject.FindProperty(nameof(ConstraintTrackSetup.gizmoScale)));
             serializedObject.ApplyModifiedProperties();
 
+            var isNotInAvatar = FindAvatar(That()) == null;
             if (!neutralsAreCreated)
             {
                 EditorGUI.BeginDisabledGroup(bones.arraySize == 0);
@@ -53,13 +60,22 @@ namespace Hai.ConstraintTrackAnimationCreator.Scripts.Editor.EditorUI
                 EditorGUILayout.PropertyField(neutrals);
                 EditorGUI.EndDisabledGroup();
 
-                var isNotInAvatar = FindAvatar(That()) == null;
-                EditorGUI.BeginDisabledGroup(isNotInAvatar);
+                EditorGUI.BeginDisabledGroup(isNotInAvatar || isDefaultName);
                 if (GUILayout.Button(CtacLocalization.Localize(CtacLocalization.Phrase.ConfirmSetup)))
                 {
                     CreateSystem();
                 }
                 EditorGUI.EndDisabledGroup();
+            }
+            if (isNotInAvatar)
+            {
+                EditorGUILayout.HelpBox(CtacLocalization.Localize(CtacLocalization.Phrase.NotInAvatar), MessageType.Error);
+            }
+
+            EditorGUILayout.Separator();
+            if (GUILayout.Button(CtacLocalization.Localize(CtacLocalization.Phrase.OpenDocumentation)))
+            {
+                Application.OpenURL(CtacLocalization.ManualUrl);
             }
         }
 

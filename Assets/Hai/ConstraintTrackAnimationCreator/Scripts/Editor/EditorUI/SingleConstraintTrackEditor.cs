@@ -20,6 +20,12 @@ namespace Hai.ConstraintTrackAnimationCreator.Scripts.Editor.EditorUI
                     UpdateConstraintTrack();
                 }
             }
+
+            EditorGUILayout.Separator();
+            if (GUILayout.Button(CtacLocalization.Localize(CtacLocalization.Phrase.OpenDocumentation)))
+            {
+                Application.OpenURL(CtacLocalization.ManualUrl);
+            }
         }
 
         private void UpdateConstraintTrack()
