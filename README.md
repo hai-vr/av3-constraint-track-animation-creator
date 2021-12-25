@@ -1,6 +1,6 @@
 # Constraint Track Animation Creator
 
-### [> Download latest version...](https://github.com/hai-vr/constraint-track-animation-creator-av3/releases)
+### [> Download latest version...](https://github.com/hai-vr/av3-constraint-track-animation-creator/releases)
 
 *Constraint Track Animation Creator* automates the creation of a gimmick that lets you animate an object to slide along a track using constraints.
 
