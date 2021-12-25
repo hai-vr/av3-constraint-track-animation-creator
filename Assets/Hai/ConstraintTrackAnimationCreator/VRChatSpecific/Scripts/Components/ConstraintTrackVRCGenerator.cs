@@ -14,7 +14,7 @@ namespace Hai.ConstraintTrackAnimationCreator.VRChatSpecific.Scripts.Components
         public string parameterPrefixName;
 
         [Header("Avatar Dynamics Mode")]
-        public CtacVRCAvatarDynamicsType avatarDynamicsType = CtacVRCAvatarDynamicsType.Unknown;
+        public string customParameter;
 
         [Header("Automatic Mode")]
         public float autoDurationSeconds = 5f;
@@ -29,11 +29,5 @@ namespace Hai.ConstraintTrackAnimationCreator.VRChatSpecific.Scripts.Components
 
         [HideInInspector] public AnimatorController assetHolder;
         [HideInInspector] public string assetKey = Guid.NewGuid().ToString();
-
-        [Serializable]
-        public enum CtacVRCAvatarDynamicsType
-        {
-            Unknown
-        }
     }
 }

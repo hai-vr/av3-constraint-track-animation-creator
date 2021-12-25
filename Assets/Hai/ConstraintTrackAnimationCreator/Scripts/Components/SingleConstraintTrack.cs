@@ -22,7 +22,7 @@ namespace Hai.ConstraintTrackAnimationCreator.Scripts.Components
         public float gizmoScale = 1f;
         public bool gizmoIncludeTransformScale = true;
 
-        [FormerlySerializedAs("paddingDistance")] public float timingPaddingDistance = 0.01f;
+        public float timingPaddingDistance = 0.01f;
         public float timingDelayStartSeconds;
         public float timingScale = 1f;
         private static readonly Color ColorGood = Color.cyan;

@@ -132,7 +132,8 @@ namespace Hai.ConstraintTrackAnimationCreator.VRChatSpecific.Scripts.Editor
             var useSmoothing = data.generator.manualIncludeSmoothing;
 
             var aapParameter = AapParameter(layer, data.parameterName);
-            var manualControlParameter = ManualControlParameter(layer, data.parameterName, generator);
+            var manualControlParameter = ManualControlParameter(layer, data.parameterName);
+            var customControlParameter = CustomControlParameter(layer, data.parameterName, generator);
             var autoParameter = AutoParameter(layer, data.parameterName);
             var allowSystemParameter = AllowSystemParameter(layer, data.parameterName, generator);
             if (generator.systemIsAllowedByDefault)
@@ -177,6 +178,10 @@ namespace Hai.ConstraintTrackAnimationCreator.VRChatSpecific.Scripts.Editor
                     .WithAnimation(_aac.NewClip().Looping().That(clip => clip.AnimatingAnimator(aapParameter).WithSecondsUnit(keyframes => keyframes.Easing(0f, 0f).Easing(1f, 0.9999f))));
             }
 
+            var custom = layer.NewState("CustomControl", 5, 1)
+                .NormalizedTime(customControlParameter)
+                .WithAnimation(_aac.NewClip().Looping().That(clip => clip.AnimatingAnimator(aapParameter).WithSecondsUnit(keyframes => keyframes.Easing(0f, 0f).Easing(1f, 0.9999f))));
+
             // Automatic Cycle
             idle.TransitionsTo(auto).When(autoParameter.IsTrue()).And(allowSystemParameter.IsTrue()).And(manualControlParameter.IsLessThan(0.01f));
             auto.TransitionsTo(done).AfterAnimationFinishes();
@@ -187,8 +192,17 @@ namespace Hai.ConstraintTrackAnimationCreator.VRChatSpecific.Scripts.Editor
             // auto.TransitionsTo(idle).When(autoParameter.IsFalse());
             // done.TransitionsTo(idle).When(autoParameter.IsFalse()).And(manualControlParameter.IsLessThan(0.01f));
 
+            // Custom Cycle
+            idle.TransitionsTo(custom).When(customControlParameter.IsGreaterThan(0.01f))
+                .And(manualControlParameter.IsLessThan(0.01f)).And(allowSystemParameter.IsTrue()).And(autoParameter.IsFalse());
+            custom.TransitionsTo(done).When(customControlParameter.IsGreaterThan(0.99f)).And(allowSystemParameter.IsTrue());
+            done.TransitionsTo(custom).When(customControlParameter.IsLessThan(0.99f)).And(customControlParameter.IsGreaterThan(0.01f))
+                .And(manualControlParameter.IsLessThan(0.01f)).And(allowSystemParameter.IsTrue()).And(autoParameter.IsFalse());
+            custom.TransitionsTo(idle).When(customControlParameter.IsLessThan(0.01f));
+            custom.TransitionsTo(auto).When(autoParameter.IsTrue()).And(allowSystemParameter.IsTrue());
+
             // Manual Cycle
-            foreach (var moveToManual in new[] {idle, auto, reverse})
+            foreach (var moveToManual in new[] {idle, auto, reverse, custom})
             {
                 moveToManual.TransitionsTo(manual).When(manualControlParameter.IsGreaterThan(0.01f)).And(allowSystemParameter.IsTrue());
             }
@@ -207,7 +221,7 @@ namespace Hai.ConstraintTrackAnimationCreator.VRChatSpecific.Scripts.Editor
             }
 
             // Allow System Immediate Shutoff
-            foreach (var cancelWhenNotAllowed in new[] {auto, reverse, manual, done})
+            foreach (var cancelWhenNotAllowed in new[] {auto, reverse, manual, custom, done})
             {
                 cancelWhenNotAllowed.TransitionsTo(idle).When(allowSystemParameter.IsFalse());
             }
@@ -311,9 +325,14 @@ namespace Hai.ConstraintTrackAnimationCreator.VRChatSpecific.Scripts.Editor
             return layer.BoolParameter($"{paramName}_Auto");
         }
 
-        private static AacFlFloatParameter ManualControlParameter(AacV0.AacFlLayer layer, string paramName, ConstraintTrackVRCGenerator generator)
+        private static AacFlFloatParameter ManualControlParameter(AacV0.AacFlLayer layer, string paramName)
         {
             return layer.FloatParameter($"{paramName}_Manual");
+        }
+
+        private static AacFlFloatParameter CustomControlParameter(AacV0.AacFlLayer layer, string paramName, ConstraintTrackVRCGenerator generator)
+        {
+            return layer.FloatParameter(string.IsNullOrEmpty(generator.customParameter) ? $"{paramName}_Custom" : $"{generator.customParameter}");
         }
     }
 }
