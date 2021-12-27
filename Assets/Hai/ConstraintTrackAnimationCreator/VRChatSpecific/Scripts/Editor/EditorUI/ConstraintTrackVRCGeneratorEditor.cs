@@ -135,7 +135,7 @@ namespace Hai.ConstraintTrackAnimationCreator.VRChatSpecific.Scripts.Editor.Edit
                 generator = that,
                 layerNameSuffix = that.layerName,
                 parameterName = that.parameterPrefixName,
-                assetHolder = that.assetHolder,
+                assetHolder = (AnimatorController)that.assetHolder,
                 _internal = new AacInternal
                 {
                     assetKey = that.assetKey

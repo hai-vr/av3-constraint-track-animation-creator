@@ -1,6 +1,5 @@
 ﻿using System;
 using Hai.ConstraintTrackAnimationCreator.Scripts.Components;
-using UnityEditor.Animations;
 using UnityEngine;
 using VRC.SDK3.Avatars.Components;
 
@@ -27,7 +26,7 @@ namespace Hai.ConstraintTrackAnimationCreator.VRChatSpecific.Scripts.Components
         public bool systemIsAllowedByDefault = true;
         public string optionalAllowSystemParamName = "";
 
-        [HideInInspector] public AnimatorController assetHolder;
+        [HideInInspector] public RuntimeAnimatorController assetHolder;
         [HideInInspector] public string assetKey = Guid.NewGuid().ToString();
     }
 }
