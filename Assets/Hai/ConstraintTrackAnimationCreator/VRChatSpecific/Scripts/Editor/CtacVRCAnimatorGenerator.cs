@@ -135,6 +135,7 @@ namespace Hai.ConstraintTrackAnimationCreator.VRChatSpecific.Scripts.Editor
             var manualControlParameter = ManualControlParameter(layer, data.parameterName);
             var customControlParameter = CustomControlParameter(layer, data.parameterName, generator);
             var autoParameter = AutoParameter(layer, data.parameterName);
+            var autoFloatParameter = AutoFloatParameter(layer, data.parameterName);
             var allowSystemParameter = AllowSystemParameter(layer, data.parameterName, generator);
             if (generator.systemIsAllowedByDefault)
             {
@@ -183,9 +184,12 @@ namespace Hai.ConstraintTrackAnimationCreator.VRChatSpecific.Scripts.Editor
                 .WithAnimation(_aac.NewClip().Looping().That(clip => clip.AnimatingAnimator(aapParameter).WithSecondsUnit(keyframes => keyframes.Easing(0f, 0f).Easing(1f, 0.9999f))));
 
             // Automatic Cycle
-            idle.TransitionsTo(auto).When(autoParameter.IsTrue()).And(allowSystemParameter.IsTrue()).And(manualControlParameter.IsLessThan(0.01f));
+            idle.TransitionsTo(auto)
+                .When(autoParameter.IsTrue()).And(allowSystemParameter.IsTrue()).And(manualControlParameter.IsLessThan(0.01f))
+                .Or().When(autoFloatParameter.IsGreaterThan(0.5f)).And(allowSystemParameter.IsTrue()).And(manualControlParameter.IsLessThan(0.01f));
             auto.TransitionsTo(done).AfterAnimationFinishes();
-            done.TransitionsTo(reverse).When(autoParameter.IsFalse()).And(allowSystemParameter.IsTrue()).And(manualControlParameter.IsLessThan(0.01f));
+            done.TransitionsTo(reverse)
+                .When(autoParameter.IsFalse()).And(autoFloatParameter.IsLessThan(0.5f)).And(allowSystemParameter.IsTrue()).And(manualControlParameter.IsLessThan(0.01f));
             reverse.TransitionsTo(idle).AfterAnimationFinishes();
 
             // Automatic Cycle without Reverse
@@ -194,12 +198,14 @@ namespace Hai.ConstraintTrackAnimationCreator.VRChatSpecific.Scripts.Editor
 
             // Custom Cycle
             idle.TransitionsTo(custom).When(customControlParameter.IsGreaterThan(0.01f))
-                .And(manualControlParameter.IsLessThan(0.01f)).And(allowSystemParameter.IsTrue()).And(autoParameter.IsFalse());
+                .And(manualControlParameter.IsLessThan(0.01f)).And(allowSystemParameter.IsTrue()).And(autoParameter.IsFalse()).And(autoFloatParameter.IsLessThan(0.5f));
             custom.TransitionsTo(done).When(customControlParameter.IsGreaterThan(0.99f)).And(allowSystemParameter.IsTrue());
             done.TransitionsTo(custom).When(customControlParameter.IsLessThan(0.99f)).And(customControlParameter.IsGreaterThan(0.01f))
-                .And(manualControlParameter.IsLessThan(0.01f)).And(allowSystemParameter.IsTrue()).And(autoParameter.IsFalse());
+                .And(manualControlParameter.IsLessThan(0.01f)).And(allowSystemParameter.IsTrue()).And(autoParameter.IsFalse()).And(autoFloatParameter.IsLessThan(0.5f));
             custom.TransitionsTo(idle).When(customControlParameter.IsLessThan(0.01f));
-            custom.TransitionsTo(auto).When(autoParameter.IsTrue()).And(allowSystemParameter.IsTrue());
+            custom.TransitionsTo(auto)
+                .When(autoParameter.IsTrue()).And(allowSystemParameter.IsTrue())
+                .Or().When(autoFloatParameter.IsGreaterThan(0.5f)).And(allowSystemParameter.IsTrue());
 
             // Manual Cycle
             foreach (var moveToManual in new[] {idle, auto, reverse, custom})
@@ -323,6 +329,11 @@ namespace Hai.ConstraintTrackAnimationCreator.VRChatSpecific.Scripts.Editor
         private static AacFlBoolParameter AutoParameter(AacV0.AacFlLayer layer, string paramName)
         {
             return layer.BoolParameter($"{paramName}_Auto");
+        }
+
+        private static AacFlFloatParameter AutoFloatParameter(AacV0.AacFlLayer layer, string paramName)
+        {
+            return layer.FloatParameter($"{paramName}_AutoFloat");
         }
 
         private static AacFlFloatParameter ManualControlParameter(AacV0.AacFlLayer layer, string paramName)
