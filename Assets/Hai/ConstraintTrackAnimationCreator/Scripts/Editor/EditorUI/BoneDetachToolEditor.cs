@@ -51,8 +51,6 @@ namespace Hai.ConstraintTrackAnimationCreator.Scripts.Editor.EditorUI
                 GUILayout.EndVertical();
             }
 
-            serializedObject.ApplyModifiedProperties();
-
             if (anyDetachedBones)
             {
                 GUILayout.BeginVertical("GroupBox");
@@ -62,13 +60,13 @@ namespace Hai.ConstraintTrackAnimationCreator.Scripts.Editor.EditorUI
                 }
 
                 EditorGUILayout.LabelField(CtacLocalization.Localize(CtacLocalization.Phrase.DetachedBones));
-                foreach (var detachment in that.detachments)
+                var detachments = serializedObject.FindProperty(nameof(BoneDetachTool.detachments));
+                for (var i = 0; i < detachments.arraySize; i++)
                 {
+                    var detachment = detachments.GetArrayElementAtIndex(i);
                     GUILayout.BeginHorizontal();
-                    EditorGUI.BeginDisabledGroup(true);
-                    EditorGUILayout.ObjectField(detachment.original, typeof(Transform));
-                    EditorGUI.EndDisabledGroup();
-                    EditorGUILayout.ObjectField(detachment.detached, typeof(Transform));
+                    EditorGUILayout.PropertyField(detachment.FindPropertyRelative(nameof(BoneDetachTool.Detachment.original)), GUIContent.none);
+                    EditorGUILayout.PropertyField(detachment.FindPropertyRelative(nameof(BoneDetachTool.Detachment.detached)), GUIContent.none);
                     GUILayout.EndHorizontal();
                 }
 
@@ -90,6 +88,8 @@ namespace Hai.ConstraintTrackAnimationCreator.Scripts.Editor.EditorUI
                 }
                 GUILayout.EndVertical();
             }
+
+            serializedObject.ApplyModifiedProperties();
 
             EditorGUILayout.Separator();
             if (GUILayout.Button(CtacLocalization.Localize(CtacLocalization.Phrase.OpenDocumentation)))
@@ -150,13 +150,12 @@ namespace Hai.ConstraintTrackAnimationCreator.Scripts.Editor.EditorUI
             that.skinnedMesh.bones = smrBones;
 
             Undo.RecordObject(that, "");
-            var newDetachments = that.detachments.ToList();
-            newDetachments.Add(new BoneDetachTool.Detachment
-            {
-                original = originalBone,
-                detached = detachedBone.transform
-            });
-            that.detachments = newDetachments.ToArray();
+            var property = serializedObject.FindProperty(nameof(BoneDetachTool.detachments));
+            var currentSize = property.arraySize;
+            property.InsertArrayElementAtIndex(currentSize);
+            var element = property.GetArrayElementAtIndex(currentSize);
+            element.FindPropertyRelative(nameof(BoneDetachTool.Detachment.original)).objectReferenceValue = originalBone;
+            element.FindPropertyRelative(nameof(BoneDetachTool.Detachment.detached)).objectReferenceValue = detachedBone.transform;
         }
 
         private void ApplyAgain()
