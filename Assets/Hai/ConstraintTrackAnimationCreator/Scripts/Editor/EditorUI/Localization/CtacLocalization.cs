@@ -27,7 +27,8 @@ namespace Hai.ConstraintTrackAnimationCreator.Scripts.Editor.EditorUI.Localizati
             WhenIsOptimized,
             OpenDocumentation,
             ChangeName,
-            NotInAvatar
+            NotInAvatar,
+            Timings
         }
 
         public static string Localize(Phrase phrase)
@@ -75,6 +76,8 @@ namespace Hai.ConstraintTrackAnimationCreator.Scripts.Editor.EditorUI.Localizati
                     return "Change the name of this object.";
                 case Phrase.NotInAvatar:
                     return "Move this object to be inside your avatar.";
+                case Phrase.Timings:
+                    return "Timings";
                 default:
                     throw new ArgumentOutOfRangeException(nameof(phrase), phrase, null);
             }

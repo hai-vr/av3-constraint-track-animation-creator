@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 using UnityEngine.Animations;
-using UnityEngine.Serialization;
 #if UNITY_EDITOR
 using UnityEditor;
 #endif
@@ -153,6 +152,11 @@ namespace Hai.ConstraintTrackAnimationCreator.Scripts.Components
         }
 
         public List<float> Timings(float scale, float addDelay)
+        {
+            return CalculateTimings(scale, path, addDelay);
+        }
+
+        public List<float> DistanceBasedTimings(float scale, float addDelay)
         {
             return CalculateTimings(scale, path, addDelay);
         }
