@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using Hai.ConstraintTrackAnimationCreator.Scripts.Editor.EditorUI.Localization;
 using Hai.ConstraintTrackAnimationCreator.Scripts.Editor.EmbeddedCtacAac;
@@ -8,6 +9,7 @@ using UnityEditor;
 using UnityEditor.Animations;
 using UnityEngine;
 using UnityEngine.Animations;
+using VRC.SDK3.Avatars.Components;
 
 namespace Hai.ConstraintTrackAnimationCreator.VRChatSpecific.Scripts.Editor.EditorUI
 {
@@ -120,13 +122,22 @@ namespace Hai.ConstraintTrackAnimationCreator.VRChatSpecific.Scripts.Editor.Edit
             }
         }
 
+        private static string ResolveFolderOfAsset(RuntimeAnimatorController reference)
+        {
+            var originalAssetPath = AssetDatabase.GetAssetPath(reference);
+            var folder = originalAssetPath.Replace(Path.GetFileName(originalAssetPath), "");
+            return folder;
+        }
+
         private void RegenerateAnimator()
         {
             var that = That();
             if (that.assetHolder == null)
             {
+                var fxLayerController = that.avatar.baseAnimationLayers.First(layer => layer.type == VRCAvatarDescriptor.AnimLayerType.FX).animatorController;
+                var folderToCreateAssetIn = ResolveFolderOfAsset(fxLayerController);
                 that.assetHolder = new AnimatorController();
-                AssetDatabase.CreateAsset(that.assetHolder, "Assets/GeneratedCTAC__" + DateTime.Now.ToString("yyyy'-'MM'-'dd'_'HHmmss") + ".asset");
+                AssetDatabase.CreateAsset(that.assetHolder, folderToCreateAssetIn + "/GeneratedCTAC__" + DateTime.Now.ToString("yyyy'-'MM'-'dd'_'HHmmss") + ".asset");
             }
 
             var generator = new CtacVRCAnimatorGenerator(new CtacController

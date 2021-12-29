@@ -1,5 +1,4 @@
-﻿using System;
-using System.Linq;
+﻿using System.Linq;
 using Hai.ConstraintTrackAnimationCreator.Scripts.Components;
 using Hai.ConstraintTrackAnimationCreator.Scripts.Editor.EmbeddedCtacAac;
 using Hai.ConstraintTrackAnimationCreator.Scripts.Editor.EmbeddedCtacAac.Fluent;
