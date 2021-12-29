@@ -11,6 +11,7 @@ namespace Hai.ConstraintTrackAnimationCreator.VRChatSpecific.Scripts.Components
         public VRCAvatarDescriptor avatar;
         public string layerName;
         public string parameterPrefixName;
+        public bool useWriteDefaultsOn;
 
         [Header("Avatar Dynamics Mode")]
         public string customParameter;

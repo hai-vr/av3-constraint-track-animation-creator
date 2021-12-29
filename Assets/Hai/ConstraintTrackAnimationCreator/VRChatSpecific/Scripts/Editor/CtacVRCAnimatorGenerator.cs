@@ -13,9 +13,10 @@ namespace Hai.ConstraintTrackAnimationCreator.VRChatSpecific.Scripts.Editor
     {
         private readonly AacV0.AacFlBase<CtacController> _aac;
 
-        public CtacVRCAnimatorGenerator(AnimatorAsCode aac)
+        public CtacVRCAnimatorGenerator(AnimatorAsCode aac, bool useWriteDefaults)
         {
-            _aac = AacV0.Using((CtacController) aac);
+            var controller = (CtacController) aac;
+            _aac = useWriteDefaults ? AacV0.UsingWithWriteDefaultsOn(controller) : AacV0.Using(controller);
         }
 
         public void Create()

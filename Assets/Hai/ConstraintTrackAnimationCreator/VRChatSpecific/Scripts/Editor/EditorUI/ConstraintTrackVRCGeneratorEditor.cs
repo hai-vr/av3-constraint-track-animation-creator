@@ -151,7 +151,7 @@ namespace Hai.ConstraintTrackAnimationCreator.VRChatSpecific.Scripts.Editor.Edit
                 {
                     assetKey = that.assetKey
                 }
-            });
+            }, that.useWriteDefaultsOn);
             generator.Create();
         }
 

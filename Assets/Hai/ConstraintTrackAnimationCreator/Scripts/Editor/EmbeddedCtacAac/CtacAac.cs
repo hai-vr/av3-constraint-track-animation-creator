@@ -29,16 +29,23 @@ namespace Hai.ConstraintTrackAnimationCreator.Scripts.Editor.EmbeddedCtacAac
         /// <returns></returns>
         internal static AacFlBase<TAacType> Using<TAacType>(TAacType component) where TAacType : AnimatorAsCode
         {
-            return new AacFlBase<TAacType>(component);
+            return new AacFlBase<TAacType>(component, false);
+        }
+
+        internal static AacFlBase<TAacType> UsingWithWriteDefaultsOn<TAacType>(TAacType component) where TAacType : AnimatorAsCode
+        {
+            return new AacFlBase<TAacType>(component, true);
         }
 
         internal class AacFlBase<TAacType> where TAacType : AnimatorAsCode
         {
             private readonly TAacType _component;
+            private readonly bool _useWriteDefaults;
 
-            public AacFlBase(TAacType component)
+            public AacFlBase(TAacType component, bool useWriteDefaults)
             {
                 _component = component;
+                _useWriteDefaults = useWriteDefaults;
             }
 
             public AacFlClip NewClip()
@@ -92,7 +99,7 @@ namespace Hai.ConstraintTrackAnimationCreator.Scripts.Editor.EmbeddedCtacAac
                 var ag = new AacFlAnimatorGenerator(animator, CreateEmptyClip().Clip);
                 var machine = ag.CreateOrRemakeLayerAtSameIndex("AAC_" + layerName, 1f, null);
 
-                return new AacFlLayer(animator, _component, machine, "AAC_" + layerName);
+                return new AacFlLayer(animator, _component, machine, "AAC_" + layerName, _useWriteDefaults);
             }
 
             private AacFlClip CreateEmptyClip()
@@ -129,19 +136,23 @@ namespace Hai.ConstraintTrackAnimationCreator.Scripts.Editor.EmbeddedCtacAac
             private readonly AnimatorController _animatorController;
             private readonly AnimatorAsCode _component;
             private readonly string _fullLayerName;
+            private readonly bool _useWriteDefaults;
             public AacFlStateMachine StateMachine { get; }
 
-            public AacFlLayer(AnimatorController animatorController, AnimatorAsCode component, AacFlStateMachine stateMachine, string fullLayerName)
+            public AacFlLayer(AnimatorController animatorController, AnimatorAsCode component, AacFlStateMachine stateMachine, string fullLayerName, bool useWriteDefaults)
             {
                 _animatorController = animatorController;
                 _component = component;
                 _fullLayerName = fullLayerName;
                 StateMachine = stateMachine;
+                _useWriteDefaults = useWriteDefaults;
             }
 
             internal AacFlState NewState(string name, int x, int y)
             {
-                return StateMachine.NewState(name, x, y);
+                var aacFlState = StateMachine.NewState(name, x, y);
+                aacFlState.State.writeDefaultValues = _useWriteDefaults;
+                return aacFlState;
             }
 
             public AacFlBoolParameter BoolParameter(string parameterName) => StateMachine.BackingAnimator().BoolParameter(parameterName);
