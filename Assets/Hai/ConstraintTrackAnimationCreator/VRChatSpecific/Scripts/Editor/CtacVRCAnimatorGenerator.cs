@@ -189,7 +189,8 @@ namespace Hai.ConstraintTrackAnimationCreator.VRChatSpecific.Scripts.Editor
                 .Or().When(autoFloatParameter.IsGreaterThan(0.5f)).And(allowSystemParameter.IsTrue()).And(manualControlParameter.IsLessThan(0.01f));
             auto.TransitionsTo(done).AfterAnimationFinishes();
             done.TransitionsTo(reverse)
-                .When(autoParameter.IsFalse()).And(autoFloatParameter.IsLessThan(0.5f)).And(allowSystemParameter.IsTrue()).And(manualControlParameter.IsLessThan(0.01f));
+                .When(autoParameter.IsFalse()).And(autoFloatParameter.IsLessThan(0.5f)).And(allowSystemParameter.IsTrue()).And(manualControlParameter.IsLessThan(0.01f))
+                .And(customControlParameter.IsLessThan(0.01f));
             reverse.TransitionsTo(idle).AfterAnimationFinishes();
 
             // Automatic Cycle without Reverse
@@ -200,7 +201,7 @@ namespace Hai.ConstraintTrackAnimationCreator.VRChatSpecific.Scripts.Editor
             idle.TransitionsTo(custom).When(customControlParameter.IsGreaterThan(0.01f))
                 .And(manualControlParameter.IsLessThan(0.01f)).And(allowSystemParameter.IsTrue()).And(autoParameter.IsFalse()).And(autoFloatParameter.IsLessThan(0.5f));
             custom.TransitionsTo(done).When(customControlParameter.IsGreaterThan(0.99f)).And(allowSystemParameter.IsTrue());
-            done.TransitionsTo(custom).When(customControlParameter.IsLessThan(0.99f))
+            done.TransitionsTo(custom).When(customControlParameter.IsLessThan(0.99f)).And(customControlParameter.IsGreaterThan(0.01f))
                 .And(manualControlParameter.IsLessThan(0.01f)).And(allowSystemParameter.IsTrue()).And(autoParameter.IsFalse()).And(autoFloatParameter.IsLessThan(0.5f));
             custom.TransitionsTo(idle).When(customControlParameter.IsLessThan(0.01f));
             custom.TransitionsTo(auto)
@@ -216,13 +217,13 @@ namespace Hai.ConstraintTrackAnimationCreator.VRChatSpecific.Scripts.Editor
             if (useSmoothing)
             {
                 manual.TransitionsTo(done).When(aapParameter.IsGreaterThan(0.99f)).And(allowSystemParameter.IsTrue());
-                done.TransitionsTo(manual).When(manualControlParameter.IsLessThan(0.99f)).And(allowSystemParameter.IsTrue());
+                done.TransitionsTo(manual).When(manualControlParameter.IsLessThan(0.99f)).And(manualControlParameter.IsGreaterThan(0.01f)).And(allowSystemParameter.IsTrue());
                 manual.TransitionsTo(idle).When(manualControlParameter.IsLessThan(0.01f)).And(aapParameter.IsLessThan(0.01f));
             }
             else
             {
                 manual.TransitionsTo(done).When(manualControlParameter.IsGreaterThan(0.99f)).And(allowSystemParameter.IsTrue());
-                done.TransitionsTo(manual).When(manualControlParameter.IsLessThan(0.99f)).And(allowSystemParameter.IsTrue());
+                done.TransitionsTo(manual).When(manualControlParameter.IsLessThan(0.99f)).And(manualControlParameter.IsGreaterThan(0.01f)).And(allowSystemParameter.IsTrue());
                 manual.TransitionsTo(idle).When(manualControlParameter.IsLessThan(0.01f));
             }
 
