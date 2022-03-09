@@ -156,6 +156,7 @@ namespace Hai.ConstraintTrackAnimationCreator.Scripts.Editor.EditorUI
             var element = property.GetArrayElementAtIndex(currentSize);
             element.FindPropertyRelative(nameof(BoneDetachTool.Detachment.original)).objectReferenceValue = originalBone;
             element.FindPropertyRelative(nameof(BoneDetachTool.Detachment.detached)).objectReferenceValue = detachedBone.transform;
+            serializedObject.ApplyModifiedProperties();
         }
 
         private void ApplyAgain()
