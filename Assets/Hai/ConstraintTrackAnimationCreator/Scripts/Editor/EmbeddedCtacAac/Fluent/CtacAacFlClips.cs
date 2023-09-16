@@ -8,10 +8,10 @@ namespace Hai.ConstraintTrackAnimationCreator.Scripts.Editor.EmbeddedCtacAac.Flu
 {
     internal readonly struct AacFlClip
     {
-        private readonly AnimatorAsCode _component;
+        private readonly CtacAacComp _component;
         public AnimationClip Clip { get; }
 
-        public AacFlClip(AnimatorAsCode component, AnimationClip clip)
+        public AacFlClip(CtacAacComp component, AnimationClip clip)
         {
             _component = component;
             Clip = clip;
@@ -99,10 +99,10 @@ namespace Hai.ConstraintTrackAnimationCreator.Scripts.Editor.EmbeddedCtacAac.Flu
 
     internal readonly struct AacFlEditClip
     {
-        private readonly AnimatorAsCode _component;
+        private readonly CtacAacComp _component;
         public AnimationClip Clip { get; }
 
-        public AacFlEditClip(AnimatorAsCode component, AnimationClip clip)
+        public AacFlEditClip(CtacAacComp component, AnimationClip clip)
         {
             _component = component;
             Clip = clip;

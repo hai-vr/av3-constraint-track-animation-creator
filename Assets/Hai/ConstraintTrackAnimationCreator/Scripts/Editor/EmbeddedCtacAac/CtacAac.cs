@@ -11,7 +11,7 @@ namespace Hai.ConstraintTrackAnimationCreator.Scripts.Editor.EmbeddedCtacAac
 {
     public static class AacV0
     {
-        private static AnimatorController AnimatorOf(AnimatorAsCode component, VRCAvatarDescriptor.AnimLayerType animLayerType)
+        private static AnimatorController AnimatorOf(CtacAacComp component, VRCAvatarDescriptor.AnimLayerType animLayerType)
         {
             return (AnimatorController)component.avatar.baseAnimationLayers.First(it => it.type == animLayerType).animatorController;
         }
@@ -27,17 +27,17 @@ namespace Hai.ConstraintTrackAnimationCreator.Scripts.Editor.EmbeddedCtacAac
         /// <param name="component"></param>
         /// <typeparam name="TAacType"></typeparam>
         /// <returns></returns>
-        internal static AacFlBase<TAacType> Using<TAacType>(TAacType component) where TAacType : AnimatorAsCode
+        internal static AacFlBase<TAacType> Using<TAacType>(TAacType component) where TAacType : CtacAacComp
         {
             return new AacFlBase<TAacType>(component, false);
         }
 
-        internal static AacFlBase<TAacType> UsingWithWriteDefaultsOn<TAacType>(TAacType component) where TAacType : AnimatorAsCode
+        internal static AacFlBase<TAacType> UsingWithWriteDefaultsOn<TAacType>(TAacType component) where TAacType : CtacAacComp
         {
             return new AacFlBase<TAacType>(component, true);
         }
 
-        internal class AacFlBase<TAacType> where TAacType : AnimatorAsCode
+        internal class AacFlBase<TAacType> where TAacType : CtacAacComp
         {
             private readonly TAacType _component;
             private readonly bool _useWriteDefaults;
@@ -134,12 +134,12 @@ namespace Hai.ConstraintTrackAnimationCreator.Scripts.Editor.EmbeddedCtacAac
         internal readonly struct AacFlLayer
         {
             private readonly AnimatorController _animatorController;
-            private readonly AnimatorAsCode _component;
+            private readonly CtacAacComp _component;
             private readonly string _fullLayerName;
             private readonly bool _useWriteDefaults;
             public AacFlStateMachine StateMachine { get; }
 
-            public AacFlLayer(AnimatorController animatorController, AnimatorAsCode component, AacFlStateMachine stateMachine, string fullLayerName, bool useWriteDefaults)
+            public AacFlLayer(AnimatorController animatorController, CtacAacComp component, AacFlStateMachine stateMachine, string fullLayerName, bool useWriteDefaults)
             {
                 _animatorController = animatorController;
                 _component = component;
@@ -244,7 +244,7 @@ namespace Hai.ConstraintTrackAnimationCreator.Scripts.Editor.EmbeddedCtacAac
             }
         }
 
-        public static AnimationClip NewClipToggling(AnimatorAsCode component, GameObject[] togglables, bool value, string suffix)
+        public static AnimationClip NewClipToggling(CtacAacComp component, GameObject[] togglables, bool value, string suffix)
         {
             return NewClipThat(component, suffix, clip =>
             {
@@ -255,7 +255,7 @@ namespace Hai.ConstraintTrackAnimationCreator.Scripts.Editor.EmbeddedCtacAac
             });
         }
 
-        public static AnimationClip NewClipThat(AnimatorAsCode component, string suffix, Action<AnimationClip> action)
+        public static AnimationClip NewClipThat(CtacAacComp component, string suffix, Action<AnimationClip> action)
         {
             var clip = NewClip(component, suffix);
 
@@ -263,12 +263,12 @@ namespace Hai.ConstraintTrackAnimationCreator.Scripts.Editor.EmbeddedCtacAac
             return clip;
         }
 
-        private static AnimationClip NewClip(AnimatorAsCode component, string suffix)
+        private static AnimationClip NewClip(CtacAacComp component, string suffix)
         {
             return NewClipRaw(component, suffix, new AnimationClip());
         }
 
-        private static AnimationClip NewClipRaw(AnimatorAsCode component, string suffix, AnimationClip newClipAsset)
+        private static AnimationClip NewClipRaw(CtacAacComp component, string suffix, AnimationClip newClipAsset)
         {
             var clip = newClipAsset;
             // clip.name = component.layerNameSuffix + " " + suffix;
@@ -278,7 +278,7 @@ namespace Hai.ConstraintTrackAnimationCreator.Scripts.Editor.EmbeddedCtacAac
             return clip;
         }
 
-        private static BlendTree NewBlendTreeAsRaw(AnimatorAsCode component, string suffix)
+        private static BlendTree NewBlendTreeAsRaw(CtacAacComp component, string suffix)
         {
             var clip = new BlendTree();
             // clip.name = component.layerNameSuffix + " " + suffix;
@@ -288,7 +288,7 @@ namespace Hai.ConstraintTrackAnimationCreator.Scripts.Editor.EmbeddedCtacAac
             return clip;
         }
 
-        public static EditorCurveBinding Binding(AnimatorAsCode component, Type type, Transform transform, string propertyName)
+        public static EditorCurveBinding Binding(CtacAacComp component, Type type, Transform transform, string propertyName)
         {
             return new EditorCurveBinding
             {

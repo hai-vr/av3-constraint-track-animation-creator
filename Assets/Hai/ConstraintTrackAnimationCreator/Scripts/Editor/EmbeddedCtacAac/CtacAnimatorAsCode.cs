@@ -4,7 +4,7 @@ using VRC.SDK3.Avatars.Components;
 
 namespace Hai.ConstraintTrackAnimationCreator.Scripts.Editor.EmbeddedCtacAac
 {
-    public class AnimatorAsCode
+    public class CtacAacComp
     {
         public VRCAvatarDescriptor avatar;
         public AnimatorController assetHolder;

@@ -3,7 +3,7 @@ using Hai.ConstraintTrackAnimationCreator.VRChatSpecific.Scripts.Components;
 
 namespace Hai.ConstraintTrackAnimationCreator.VRChatSpecific.Scripts.Editor
 {
-    public class CtacController : AnimatorAsCode
+    public class CtacController : CtacAacComp
     {
         public ConstraintTrackVRCGenerator generator;
     }
